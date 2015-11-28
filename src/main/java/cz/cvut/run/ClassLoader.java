@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import org.apache.log4j.Logger;
 
 import cz.cvut.run.constants.Constants;
+import cz.cvut.run.utils.Utils;
 
 public class ClassLoader {
 	private static final Logger log = Logger.getLogger(ClassLoader.class);
@@ -34,10 +35,16 @@ public class ClassLoader {
 	private byte[] this_class = new byte[2];
 	private byte[] super_class = new byte[2];
 	private byte[] interface_count = new byte[2];
+	private int interfaceCount = 0;
 	
 	private byte[] attributes_count = new byte[2];
+	private int attributesCount = 0;
+	
 	private byte[] fields_count = new byte[2];
+	private int fieldsCount = 0;
+	
 	private byte[] methods_count = new byte[2];
+	private int methodsCount = 0;
 	
 	
 	
@@ -62,26 +69,32 @@ public class ClassLoader {
 		fis.read(minor_version, 0, 2);
 
 		fis.read(major_version, 0, 2);
-		fis.read(constant_pool_count, 0, 2);
 		
-		constantPoolCount = constant_pool_count[1] + 255*constant_pool_count[0];
+		fis.read(constant_pool_count, 0, 2);
+		constantPoolCount = Utils.parseByteToInt(constant_pool_count);
 		readConstants();
 		
 		fis.read(access_flags, 0, 2);
 		fis.read(this_class, 0, 2);
 		fis.read(super_class, 0, 2);
+		
 		fis.read(interface_count, 0, 2);
+		interfaceCount = Utils.parseByteToInt(interface_count);
 		readInterfaces();
 		
 		fis.read(fields_count, 0, 2);
+		fieldsCount = Utils.parseByteToInt(fields_count);
 		readFields();
 		
 		fis.read(methods_count, 0, 2);
+		methodsCount = Utils.parseByteToInt(methods_count);
 		readMethods();
 		
 		fis.read(attributes_count, 0, 2);
+		attributesCount = Utils.parseByteToInt(attributes_count);
 		readAttributes();
 		
+		log.info(constantPoolCount + " " + interfaceCount +" " + fieldsCount + " " + methodsCount + " " + attributesCount);
 	}
 
 	private void readAttributes() {
@@ -95,16 +108,18 @@ public class ClassLoader {
 	}
 
 	private void readFields() {
-		// TODO Auto-generated method stub
 		
 	}
 
 	/**
-	 * Metoda naète všechny interfejsi
+	 * Metoda naète všechny interfejsi - nejsou žádné, proto teï nic nenaèítá
 	 * @throws Exception
 	 */
 	private void readInterfaces() throws Exception{
-		// TODO Auto-generated method stub
+		byte[] interfaceRef = new byte[2];
+		for(int i=0; i<interfaceCount; i++){
+			fis.read(interfaceRef, 0, 2);
+		}
 		
 	}
 	
@@ -151,7 +166,7 @@ public class ClassLoader {
 					// 2 length + length
 					byte[] length = new byte[2];
 					fis.read(length, 0, 2);
-					byte[] value = new byte[length[1] + 255* length[0]];
+					byte[] value = new byte[Utils.parseByteToInt(length)];
 					fis.read(value, 0, value.length);
 					byte[] finalValue = new byte[2 + value.length];
 					finalValue[0] = length[0];
@@ -209,9 +224,6 @@ public class ClassLoader {
 			}
 			
 		}
-		for (int i=0; i<constantPoolCount-1; i++){
-			log.info(((constPoolObject) constantPool[i]).getTag());
-		}
 	}
 	
 	/**
@@ -235,5 +247,25 @@ public class ClassLoader {
 		}
 	}
 	
+	private class fieldObject{
+		private byte[] access_flags = new byte[2];
+		private byte[] name_index = new byte[2];
+		private byte[] descriptor_index = new byte[2];
+		private byte[] attributes_count = new byte[2];
+		
+		fieldObject(){
+			
+		}
+	}
+	
+	private class attributeInfo{
+		private byte[] attribute_name_index = new byte[2];
+		private byte[] attribute_length = new byte[4];
+		private byte[] attribute_info = new byte[Utils.parseByteToInt(attribute_length)]; // až se vùbec naète délka attributù
+		
+		attributeInfo(){
+			
+		}
+	}
 
 }

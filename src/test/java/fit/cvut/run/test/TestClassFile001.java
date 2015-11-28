@@ -3,6 +3,7 @@ package fit.cvut.run.test;
 public class TestClassFile001 {
 	private static int privateInt;
 	private static String privateString;
+	private static int abc = 1;
 	
 	
 	public static void main(String[] args) {

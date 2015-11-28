@@ -3,6 +3,8 @@ package fit.cvut.run.test;
 import org.junit.Test;
 
 import cz.cvut.run.JVM;
+import cz.cvut.run.utils.Utils;
+import junit.framework.Assert;
 
 public class ApplicationTest {
 	private static final String TEST_CLASSES_PATH = "\\target\\test-classes\\fit\\cvut\\run\\test";
@@ -36,5 +38,11 @@ public class ApplicationTest {
     @Test(expected=java.lang.Exception.class)
     public void testSimpleRightPathBadFile() throws Exception{ // Jednoduché puštìní s odkazem na platnou cestu ale chybný soubor
     	JVM.main(new String[] {new java.io.File( "." ).getCanonicalPath()+ TestWrongFile});
+    }
+    
+    @Test
+    public void testParseByteToInt(){
+    	Assert.assertEquals(12345, Utils.parseByteToInt(new byte[] {48,57}));
+    	Assert.assertEquals(1234512345, Utils.parseByteToInt(new byte[] {73,-107,41,-39}));
     }
 }
