@@ -13,6 +13,7 @@ public class TestClassFile001 {
 		System.out.println(privateInt);
 		System.out.println(privateString);
 		System.out.println(publicMethod());
+		System.out.println(abc);
 	}
 	
 	private static void privateMethod(){

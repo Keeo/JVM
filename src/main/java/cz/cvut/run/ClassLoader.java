@@ -2,6 +2,7 @@ package cz.cvut.run;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 
 import org.apache.log4j.Logger;
 
@@ -46,6 +47,8 @@ public class ClassLoader {
 	private byte[] methods_count = new byte[2];
 	private int methodsCount = 0;
 	
+	Object[] constantPool;
+	Object[] fields;
 	
 	
 	ClassLoader(File file) throws Exception{
@@ -107,8 +110,11 @@ public class ClassLoader {
 		
 	}
 
-	private void readFields() {
-		
+	private void readFields() throws Exception {
+		fields = new Object[fieldsCount];
+		for (int i=0; i<fieldsCount; i++){
+			fields[i] = new fieldObject();
+		}
 	}
 
 	/**
@@ -129,7 +135,7 @@ public class ClassLoader {
 	 */
 	private void readConstants() throws Exception {
 		byte[] tagArr = new byte[1];
-		Object[] constantPool = new Object[constantPoolCount];
+		constantPool = new Object[constantPoolCount];
 		
 		for (int i=0; i<constantPoolCount-1; i++){
 			fis.read(tagArr, 0, 1);
@@ -252,19 +258,33 @@ public class ClassLoader {
 		private byte[] name_index = new byte[2];
 		private byte[] descriptor_index = new byte[2];
 		private byte[] attributes_count = new byte[2];
-		
-		fieldObject(){
-			
+		private Object[] attributes_info;
+		fieldObject() throws Exception{
+			fis.read(access_flags, 0, 2);
+			fis.read(name_index, 0, 2);
+			fis.read(descriptor_index, 0, 2);
+			fis.read(attributes_count, 0, 2);
+			attributes_info = new Object[Utils.parseByteToInt(attributes_count)];
+			for(int i=0; i<Utils.parseByteToInt(attributes_count); i++){
+				attributes_info[i] = new attributeInfo();
+			}
 		}
 	}
 	
 	private class attributeInfo{
 		private byte[] attribute_name_index = new byte[2];
 		private byte[] attribute_length = new byte[4];
-		private byte[] attribute_info = new byte[Utils.parseByteToInt(attribute_length)]; // až se vùbec naète délka attributù
+		private Object[] attribute_info;
 		
-		attributeInfo(){
-			
+		attributeInfo() throws Exception{
+			fis.read(attribute_name_index, 0, 2);
+			fis.read(attribute_length, 0, 4);
+			attribute_info = new Object[Utils.parseByteToInt(attribute_length)];
+			for (int i=0; i<Utils.parseByteToInt(attribute_length); i++){
+				byte[] temp = new byte[2];
+				fis.read(temp, 0, 2);
+				attribute_info[i] = temp;
+			}
 		}
 	}
 
