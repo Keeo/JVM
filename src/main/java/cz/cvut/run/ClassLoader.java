@@ -38,6 +38,7 @@ public class ClassLoader {
 			readFile();
 			fis.close();
 		}else{
+			log.error("Unsupported file " + this.file.getAbsolutePath() + "!");
 			throw new Exception("Unsupported file " + this.file.getAbsolutePath() + "!");
 		}
 	}
@@ -46,7 +47,7 @@ public class ClassLoader {
 		fis = new FileInputStream(file);
 		fis.read(magic, 0, 4);
 		if (!String.format("0x%02X%02X%02X%02X", magic[0], magic[1], magic[2], magic[3]).equals(Constants.JAVA_MAGIC)){
-			log.error("Bad file format" + file.getAbsolutePath());
+			log.error("Bad file format: " + file.getAbsolutePath());
 			throw new Exception("Bad file format!");
 		}
 		fis.read(minor_version, 0, 2);
