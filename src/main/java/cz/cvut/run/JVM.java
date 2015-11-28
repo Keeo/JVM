@@ -11,7 +11,7 @@ public class JVM {
     private static final Logger log = Logger.getLogger(JVM.class);
     
 	public static void main(String[] args) throws Exception {
-        log.info("=============== START of JVM  ==============");
+        log.debug("=============== START of JVM  ==============");
         if(args != null && args.length > 0){
         	for(int i=0; i< args.length; i++){
         		classes.add(new ClassLoader(new File(args[i])));
@@ -23,6 +23,6 @@ public class JVM {
         
         
         
-        log.info("================ END of JVM ================");
+        log.debug("================ END of JVM ================");
     }
 }
