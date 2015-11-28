@@ -6,10 +6,12 @@ import cz.cvut.run.JVM;
 
 public class ApplicationTest {
 	private static final String TEST_CLASSES_PATH = "\\target\\test-classes\\fit\\cvut\\run\\test";
+	private static final String TEST_CLASSES_WRONG_PATH = "\\target\\maven-status\\maven-compiler-plugin\\compile\\default-compile";
 	
 	private static final String DELIMITER = "\\";
 	
 	private static final String TestClassFile001 = DELIMITER + "TestClassFile001.class";
+	private static final String TestWrongFile = TEST_CLASSES_WRONG_PATH + DELIMITER + "createdFiles.lst";
 	
     @Test
     public void testMain() throws Exception { // spuštìní prázdné aplikace projde bez vyjímky
@@ -29,5 +31,10 @@ public class ApplicationTest {
     @Test()
     public void testSimpleRightPath() throws Exception{ // Jednoduché puštìní s odkazem na platnou cestu
     	JVM.main(new String[] {new java.io.File( "." ).getCanonicalPath()+TEST_CLASSES_PATH + TestClassFile001});
+    }
+    
+    @Test(expected=java.lang.Exception.class)
+    public void testSimpleRightPathBadFile() throws Exception{ // Jednoduché puštìní s odkazem na platnou cestu ale chybný soubor
+    	JVM.main(new String[] {new java.io.File( "." ).getCanonicalPath()+ TestWrongFile});
     }
 }
