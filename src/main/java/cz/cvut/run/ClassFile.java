@@ -13,8 +13,8 @@ public class ClassFile {
 	private int majorVersion;
 	private int constantPoolCount;
 	private ArrayList<ConstantPoolElement> constantPool;
-	private int accessFlags;
-	private int thisClass;
+	private byte[] accessFlags;
+	private byte[] thisClass;
 	private int superClass;
 	private int interfaceCount;
 	private ArrayList<Interface> interfaces;
@@ -45,17 +45,17 @@ public class ClassFile {
 	public void setConstantPoolCount(int constantPoolCount) {
 		this.constantPoolCount = constantPoolCount;
 	}
-	public int getAccessFlags() {
+	public byte[] getAccessFlags() {
 		return accessFlags;
 	}
-	public void setAccessFlags(int accessFlags) {
-		this.accessFlags = accessFlags;
+	public void setAccessFlags(byte[] access_flags) {
+		this.accessFlags = access_flags;
 	}
-	public int getThisClass() {
+	public byte[] getThisClass() {
 		return thisClass;
 	}
-	public void setThisClass(int thisClass) {
-		this.thisClass = thisClass;
+	public void setThisClass(byte[] this_class) {
+		this.thisClass = this_class;
 	}
 	public int getSuperClass() {
 		return superClass;
