@@ -66,6 +66,8 @@ public class ClassLoader {
 	
 	private void readFile() throws Exception{
 		fis = new FileInputStream(file);
+		ClassFile cf = new ClassFile();
+		
 		fis.read(magic, 0, 4);
 		if (!String.format("0x%02X%02X%02X%02X", magic[0], magic[1], magic[2], magic[3]).equals(Constants.JAVA_MAGIC)){
 			log.error("Bad file format: " + file.getAbsolutePath());
