@@ -49,6 +49,9 @@ public class ClassLoader {
 	
 	Object[] constantPool;
 	Object[] fields;
+	Object[] methods;
+	Object[] attributes;
+	
 	
 	
 	ClassLoader(File file) throws Exception{
@@ -96,17 +99,26 @@ public class ClassLoader {
 		fis.read(attributes_count, 0, 2);
 		attributesCount = Utils.parseByteToInt(attributes_count);
 		readAttributes();
+		byte[] temp = new byte[50];
+		fis.read(temp, 0, 50);
+		System.out.println(temp[0] + " " + temp[1] + " " + temp[2]+ " " + temp[3] + " " + temp[4]);
+		System.out.println(attributes[attributesCount-1]);
+		System.out.println(((methodsObject)methods[methodsCount - 1]));
 		
-		log.info(constantPoolCount + " " + interfaceCount +" " + fieldsCount + " " + methodsCount + " " + attributesCount);
 	}
 
-	private void readAttributes() {
-		// TODO Auto-generated method stub
-		
+	private void readAttributes() throws Exception {
+		attributes = new Object[attributesCount];
+		for (int i=0; i<attributesCount; i++){
+			methods[i] = new attributeObject();
+		}
 	}
 
-	private void readMethods() {
-		// TODO Auto-generated method stub
+	private void readMethods() throws Exception {
+		methods = new Object[methodsCount];
+		for (int i=0; i<methodsCount; i++){
+			methods[i] = new methodsObject();
+		}
 		
 	}
 
@@ -266,25 +278,68 @@ public class ClassLoader {
 			fis.read(attributes_count, 0, 2);
 			attributes_info = new Object[Utils.parseByteToInt(attributes_count)];
 			for(int i=0; i<Utils.parseByteToInt(attributes_count); i++){
-				attributes_info[i] = new attributeInfo();
+				attributes_info[i] = new attributeObject();
 			}
 		}
 	}
 	
-	private class attributeInfo{
+	private class attributeObject{
 		private byte[] attribute_name_index = new byte[2];
 		private byte[] attribute_length = new byte[4];
 		private Object[] attribute_info;
 		
-		attributeInfo() throws Exception{
+		attributeObject() throws Exception{
 			fis.read(attribute_name_index, 0, 2);
 			fis.read(attribute_length, 0, 4);
 			attribute_info = new Object[Utils.parseByteToInt(attribute_length)];
 			for (int i=0; i<Utils.parseByteToInt(attribute_length); i++){
-				byte[] temp = new byte[2];
-				fis.read(temp, 0, 2);
+				byte[] temp = new byte[1];
+				fis.read(temp, 0, 1);
 				attribute_info[i] = temp;
 			}
+		}
+		@Override
+		public String toString(){
+			StringBuilder sb = new StringBuilder();
+			sb.append(attribute_name_index[0]).append(" ").append(attribute_name_index[1]).append(" ");
+			sb.append(attribute_length[0]).append(" ").append(attribute_length[1]).append(" ");
+			sb.append(attribute_length[2]).append(" ").append(attribute_length[3]).append(" ");
+			for (int i=0; i<Utils.parseByteToInt(attribute_length); i++){
+				sb.append(((byte[]) attribute_info[i])[0]).append(" ");
+			}
+			return sb.toString();
+		}
+	}
+	
+	private class methodsObject{
+		private byte[] access_flags = new byte[2];
+		private byte[] name_index = new byte[2];
+		private byte[] descriptor_index = new byte[2];
+		private byte[] attributes_count = new byte[2];
+		private Object[] attributes_info;
+		
+		methodsObject() throws Exception{
+			fis.read(access_flags, 0, 2);
+			fis.read(name_index, 0, 2);
+			fis.read(descriptor_index, 0, 2);
+			fis.read(attributes_count, 0, 2);
+			attributes_info = new Object[Utils.parseByteToInt(attributes_count)];
+			for(int i=0; i<Utils.parseByteToInt(attributes_count); i++){
+				attributes_info[i] = new attributeObject();
+			}
+			
+		}
+		
+		@Override
+		public String toString(){
+			StringBuilder sb = new StringBuilder();
+			sb.append(access_flags[0]).append(" ").append(access_flags[1]).append(" ");
+			sb.append(name_index[0]).append(" ").append(name_index[1]).append(" ");
+			sb.append(descriptor_index[0]).append(" ").append(descriptor_index[1]).append(" ");
+			sb.append(attributes_count[0]).append(" ").append(attributes_count[1]).append(" ");
+			sb.append(((attributeObject)attributes_info[0]));
+			
+			return sb.toString();
 		}
 	}
 
