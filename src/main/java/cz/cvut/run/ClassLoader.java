@@ -2,10 +2,26 @@ package cz.cvut.run;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
+import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
 
+import cz.cvut.run.classfile.Attribute;
+import cz.cvut.run.classfile.ConstantPoolElement;
+import cz.cvut.run.classfile.Field;
+import cz.cvut.run.classfile.Interface;
+import cz.cvut.run.classfile.Method;
+import cz.cvut.run.classfile.constantpool.ConstClassInfo;
+import cz.cvut.run.classfile.constantpool.ConstDoubleInfo;
+import cz.cvut.run.classfile.constantpool.ConstFieldRefInfo;
+import cz.cvut.run.classfile.constantpool.ConstFloatInfo;
+import cz.cvut.run.classfile.constantpool.ConstIntegerInfo;
+import cz.cvut.run.classfile.constantpool.ConstInterfaceMethodRefInfo;
+import cz.cvut.run.classfile.constantpool.ConstLongInfo;
+import cz.cvut.run.classfile.constantpool.ConstMethodRefInfo;
+import cz.cvut.run.classfile.constantpool.ConstNameAndTypeInfo;
+import cz.cvut.run.classfile.constantpool.ConstStringInfo;
+import cz.cvut.run.classfile.constantpool.ConstUtf8Info;
 import cz.cvut.run.constants.Constants;
 import cz.cvut.run.utils.Utils;
 
@@ -30,28 +46,22 @@ public class ClassLoader {
 	private byte[] minor_version = new byte[2];
 	private byte[] major_version = new byte[2];
 	private byte[] constant_pool_count = new byte[2];
-	private int constantPoolCount =0;
 	
 	private byte[] access_flags = new byte[2];
 	private byte[] this_class = new byte[2];
 	private byte[] super_class = new byte[2];
 	private byte[] interface_count = new byte[2];
-	private int interfaceCount = 0;
 	
 	private byte[] attributes_count = new byte[2];
-	private int attributesCount = 0;
-	
-	private byte[] fields_count = new byte[2];
-	private int fieldsCount = 0;
-	
+	private byte[] fields_count = new byte[2];	
 	private byte[] methods_count = new byte[2];
-	private int methodsCount = 0;
+
 	
 	Object[] constantPool;
 	Object[] fields;
 	Object[] methods;
 	Object[] attributes;
-	
+	protected ClassFile cf = new ClassFile();
 	
 	
 	ClassLoader(File file) throws Exception{
@@ -67,6 +77,7 @@ public class ClassLoader {
 	
 	private void readFile() throws Exception{
 		fis = new FileInputStream(file);
+		
 		fis.read(magic, 0, 4);
 		if (!String.format("0x%02X%02X%02X%02X", magic[0], magic[1], magic[2], magic[3]).equals(Constants.JAVA_MAGIC)){
 			log.error("Bad file format: " + file.getAbsolutePath());
@@ -77,8 +88,12 @@ public class ClassLoader {
 		// Read Versions
 		//
 		fis.read(minor_version, 0, 2);
-		log.debug("Minor version: \t\t" + Utils.getHexa(minor_version));
 		fis.read(major_version, 0, 2);
+		
+		cf.setMinorVersion(Utils.parseByteToInt(minor_version));
+		cf.setMajorVersion(Utils.parseByteToInt(major_version));
+		
+		log.debug("Minor version: \t\t" + Utils.getHexa(minor_version));
 		log.debug("Major version: \t\t" + Utils.getHexa(major_version));
 		
 		
@@ -86,8 +101,11 @@ public class ClassLoader {
 		// Read constant pool
 		//
 		fis.read(constant_pool_count, 0, 2);
+		
+		cf.setConstantPoolCount(Utils.parseByteToInt(constant_pool_count));
+		
 		log.debug("Constant pool count: \t" + Utils.getHexa(constant_pool_count));
-		constantPoolCount = Utils.parseByteToInt(constant_pool_count);
+		
 		readConstants();
 		
 		
@@ -95,21 +113,25 @@ public class ClassLoader {
 		//Read access flags and class
 		//
 		fis.read(access_flags, 0, 2);
-		log.debug("Access flags: \t\t" + Utils.getHexa(access_flags));
-		
 		fis.read(this_class, 0, 2);
-		log.debug("This class: \t\t" + Utils.getHexa(this_class));
-		
 		fis.read(super_class, 0, 2);
+		
+		cf.setAccessFlags(access_flags);
+		cf.setThisClass(this_class);
+		
+		log.debug("Access flags: \t\t" + Utils.getHexa(access_flags));
+		log.debug("This class: \t\t" + Utils.getHexa(this_class));
 		log.debug("Super class: \t\t" + Utils.getHexa(super_class));
+		
 		
 		
 		//
 		// Read interfaces
 		//
 		fis.read(interface_count, 0, 2);
+		cf.setInterfaceCount(Utils.parseByteToInt(interface_count));
 		log.debug("Interface count: \t\t" + Utils.getHexa(interface_count));
-		interfaceCount = Utils.parseByteToInt(interface_count);
+		
 		readInterfaces();
 		
 		
@@ -117,47 +139,98 @@ public class ClassLoader {
 		// Read fields
 		//
 		fis.read(fields_count, 0, 2);
+		cf.setFieldCount(Utils.parseByteToInt(fields_count));
 		log.debug("Fields count: \t\t" + Utils.getHexa(fields_count));
-		fieldsCount = Utils.parseByteToInt(fields_count);
+		
 		readFields();
 
 		//
 		// Read methods
 		//
 		fis.read(methods_count, 0, 2);
+		cf.setMethodsCount(Utils.parseByteToInt(methods_count));
 		log.debug("Methods count: \t\t" + Utils.getHexa(methods_count));
-		methodsCount = Utils.parseByteToInt(methods_count);
 		readMethods();
 		
 		//
 		// Read attributes
 		//
 		fis.read(attributes_count, 0, 2);
+		cf.setAttributesCount(Utils.parseByteToInt(attributes_count));
 		log.debug("Attributes count: \t\t" + Utils.getHexa(attributes_count));
-		attributesCount = Utils.parseByteToInt(attributes_count);
 		readAttributes();		
 	}
 
 	private void readAttributes() throws Exception {
-		attributes = new Object[attributesCount];
-		for (int i=0; i<attributesCount; i++){
-			attributes[i] = new attributeObject();
+		ArrayList<Attribute> attributes = new ArrayList<Attribute>();
+		
+		for (int i=0; i<cf.getAttributesCount(); i++){
+			attributes.add(readAttribute());
 		}
+		cf.setAttributes(attributes);
 	}
 
 	private void readMethods() throws Exception {
-		methods = new Object[methodsCount];
-		for (int i=0; i<methodsCount; i++){
-			methods[i] = new methodsObject();
-		}
+		ArrayList<Method> methods = new ArrayList<Method>();
 		
+		for (int i=0; i<cf.getMethodsCount(); i++){
+			byte[] access_flags = new byte[2];
+			byte[] name_index = new byte[2];
+			byte[] descriptor_index = new byte[2];
+			byte[] attributes_count = new byte[2];
+			
+			fis.read(access_flags, 0, 2);
+			fis.read(name_index, 0, 2);
+			fis.read(descriptor_index, 0, 2);
+			fis.read(attributes_count, 0, 2);
+			
+			log.debug("METH: Access flags: \t" + Utils.getHexa(access_flags));
+			log.debug("METH: Name index: \t\t" + Utils.getHexa(name_index));
+			log.debug("METH: Descriptor index: \t" + Utils.getHexa(descriptor_index));
+			log.debug("METH: Attribures count: \t" + Utils.getHexa(attributes_count));
+			
+			Method m = new Method(access_flags, name_index, descriptor_index, attributes_count);
+			log.debug("METH: name: " + cf.getConstantPool().get(m.getName_index()-1));
+			log.debug("METH: descriptor: " + cf.getConstantPool().get(m.getDescriptor_index()-1));
+			
+			ArrayList<Attribute> attributes = new ArrayList<Attribute>();
+			for(int j=0; j<m.getAttributesCount(); j++){
+				attributes.add(readAttribute());
+			}
+			m.setAttributes_info(attributes);
+			
+			methods.add(m);
+		}
+		cf.setMethods(methods);
 	}
 
 	private void readFields() throws Exception {
-		fields = new Object[fieldsCount];
-		for (int i=0; i<fieldsCount; i++){
-			fields[i] = new fieldObject();
+		ArrayList<Field> fields = new ArrayList<Field>();
+		
+		for (int i=0; i<cf.getFieldCount(); i++){
+			byte[] access_flags = new byte[2];
+			byte[] name_index = new byte[2];
+			byte[] descriptor_index = new byte[2];
+			byte[] attributes_count = new byte[2];
+			fis.read(access_flags, 0, 2);
+			fis.read(name_index, 0, 2);
+			fis.read(descriptor_index, 0, 2);
+			fis.read(attributes_count, 0, 2);
+			
+			log.debug("FIELD: Access flags: \t" + Utils.getHexa(access_flags));
+			log.debug("FIELD: Name index: \t\t" + Utils.getHexa(name_index));
+			log.debug("FIELD: Descriptor index: \t" + Utils.getHexa(descriptor_index));
+			log.debug("FIELD: Attribures count: \t" + Utils.getHexa(attributes_count));
+			
+			Field f = new Field(access_flags, name_index, descriptor_index, attributes_count);
+			ArrayList<Attribute> attributes = new ArrayList<Attribute>();
+			for(int j=0; j<f.getAttributesCount(); j++){
+				attributes.add(readAttribute());
+			}
+			f.setAttributesInfo(attributes);
+			fields.add(f);
 		}
+		cf.setFields(fields);
 	}
 
 	/**
@@ -165,12 +238,14 @@ public class ClassLoader {
 	 * @throws Exception
 	 */
 	private void readInterfaces() throws Exception{
+		ArrayList<Interface> interfaces = new ArrayList<Interface>();
 		byte[] interfaceRef = new byte[2];
-		for(int i=0; i<interfaceCount; i++){
+		for(int i=0; i<cf.getInterfaceCount(); i++){
 			fis.read(interfaceRef, 0, 2);
 			log.debug("Interface reference: \t\t" + Utils.getHexa(interfaceRef));
+			interfaces.add(new Interface(interfaceRef));
 		}
-		
+		cf.settInterfaces(interfaces);
 	}
 	
 	/**
@@ -179,9 +254,9 @@ public class ClassLoader {
 	 */
 	private void readConstants() throws Exception {
 		byte[] tagArr = new byte[1];
-		constantPool = new Object[constantPoolCount];
+		ArrayList<ConstantPoolElement> constantPool = new ArrayList<ConstantPoolElement>();
 		
-		for (int i=0; i<constantPoolCount-1; i++){
+		for (int i=0; i<cf.getConstantPoolCount()-1; i++){
 			fis.read(tagArr, 0, 1);
 			
 			byte tag = tagArr[0];
@@ -189,7 +264,7 @@ public class ClassLoader {
 				case TAG_INTEGER:{					// 4 - uvádí poèet bytu za tagem
 					byte[] value = new byte[4]; 
 					fis.read(value, 0, 4);
-					constantPool[i] = new constPoolObject(tag, value);
+					constantPool.add(new ConstIntegerInfo(value));
 					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(value));
 					break;
 				}
@@ -197,24 +272,28 @@ public class ClassLoader {
 					// 4
 					byte[] value = new byte[4]; 
 					fis.read(value, 0, 4);
-					constantPool[i] = new constPoolObject(tag, value);
+					constantPool.add(new ConstFloatInfo(value));
 					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(value));
 					break;
 				}
 				case TAG_LONG:{
 					// 4 high  + 4 low
-					byte[] value = new byte[8]; 
-					fis.read(value, 0, 8);
-					constantPool[i] = new constPoolObject(tag, value);
-					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(value));
+					byte[] low = new byte[4];
+					byte[] high = new byte[4];
+					fis.read(low, 0, 4);
+					fis.read(high, 0, 4);
+					constantPool.add(new ConstLongInfo(low, high));
+					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(low)+ " " + Utils.getHexa(high));
 					break;
 				}
 				case TAG_DOUBLE:{
 					// 4 high + 4 low
-					byte[] value = new byte[8]; 
-					fis.read(value, 0, 8);
-					constantPool[i] = new constPoolObject(tag, value);
-					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(value));
+					byte[] low = new byte[4];
+					byte[] high = new byte[4];
+					fis.read(low, 0, 4);
+					fis.read(high, 0, 4);
+					constantPool.add(new ConstDoubleInfo(low, high));
+					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(low)+ " " + Utils.getHexa(high));
 					break;
 				}
 				case TAG_UTF8:{
@@ -223,20 +302,16 @@ public class ClassLoader {
 					fis.read(length, 0, 2);
 					byte[] value = new byte[Utils.parseByteToInt(length)];
 					fis.read(value, 0, value.length);
-					byte[] finalValue = new byte[2 + value.length];
-					finalValue[0] = length[0];
-					for(int j=2; j<finalValue.length; j++){
-						finalValue[j] = value[j-2];
-					}
-					constantPool[i] = new constPoolObject(tag, finalValue);
-					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(finalValue));
+					
+					constantPool.add(new ConstUtf8Info(length, value));
+					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(value));
 					break;
 				}
 				case TAG_STRING:{
 					// 2
 					byte[] value = new byte[2]; 
 					fis.read(value, 0, 2);
-					constantPool[i] = new constPoolObject(tag, value);
+					constantPool.add(new ConstStringInfo(value));
 					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(value));
 					break;
 				}
@@ -244,145 +319,87 @@ public class ClassLoader {
 					// 2
 					byte[] value = new byte[2]; 
 					fis.read(value, 0, 2);
-					constantPool[i] = new constPoolObject(tag, value);
+					constantPool.add(new ConstClassInfo(value));
 					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(value));
 					break;
 				}
 				case TAG_FIELDREF:{
 					// 2 class index + 2 name and type index
-					byte[] value = new byte[4]; 
-					fis.read(value, 0, 4);
-					constantPool[i] = new constPoolObject(tag, value);
-					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(value));
+					byte[] class_index = new byte[2]; 
+					byte[] name_and_type_index = new byte[2]; 
+					fis.read(class_index, 0, 2);
+					fis.read(name_and_type_index, 0, 2);
+					
+					constantPool.add(new ConstFieldRefInfo(class_index, name_and_type_index));
+					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(class_index)+ "" + Utils.getHexa(name_and_type_index));
 					break;
 				}
 				case TAG_METHODREF:{
 					// 2 class index 2 name and type index
-					byte[] value = new byte[4]; 
-					fis.read(value, 0, 4);
-					constantPool[i] = new constPoolObject(tag, value);
-					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(value));
+					byte[] class_index = new byte[2]; 
+					byte[] name_and_type_index = new byte[2]; 
+					fis.read(class_index, 0, 2);
+					fis.read(name_and_type_index, 0, 2);
+					
+					constantPool.add(new ConstMethodRefInfo(class_index, name_and_type_index));
+					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(class_index)+ "" + Utils.getHexa(name_and_type_index));
 					break;
 				}
 				case TAG_INTERFACE_METHODREF:{
 					// 2 class index + 2 name and type index
-					byte[] value = new byte[4]; 
-					fis.read(value, 0, 4);
-					constantPool[i] = new constPoolObject(tag, value);
-					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(value));
+					byte[] class_index = new byte[2]; 
+					byte[] name_and_type_index = new byte[2]; 
+					fis.read(class_index, 0, 2);
+					fis.read(name_and_type_index, 0, 2);
+					
+					constantPool.add(new ConstInterfaceMethodRefInfo(class_index, name_and_type_index));
+					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(class_index)+ "" + Utils.getHexa(name_and_type_index));
 					break;
 				}
 				case TAG_NAME_AND_TYPE:{
 					// 2 name index 2 descriptor index
-					byte[] value = new byte[4]; 
-					fis.read(value, 0, 4);
-					constantPool[i] = new constPoolObject(tag, value);
-					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(value));
+					byte[] class_index = new byte[2]; 
+					byte[] descriptor_index = new byte[2]; 
+					fis.read(class_index, 0, 2);
+					fis.read(descriptor_index, 0, 2);
+					
+					constantPool.add(new ConstNameAndTypeInfo(class_index, descriptor_index));
+					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(class_index)+ "" + Utils.getHexa(descriptor_index));
 					break;
 				}
 				default:
 					log.error("Unsupported tag in constant pool!");
 					throw new Exception("Unsupported tag in constant pool!");
 			}
-			
 		}
+		cf.setConstantPool(constantPool);
 	}
 	
-	/**
-	 * Tøída která reprezentuje jednu hodnotu z constatnt poolu
-	 * @author Jeff
-	 *
-	 */
-	private class constPoolObject{
-		private byte tag;
-		private byte[] value;
-		constPoolObject(byte tag, byte[] value){
-			this.tag = tag;
-			this.value = value;
-		}
+	
+	private Attribute readAttribute() throws Exception{
+		byte[] attribute_name_index = new byte[2];
+		byte[] attribute_length = new byte[4];
+		byte[] attribute_info;
 		
-		public byte getTag(){
-			return this.tag;
-		}
-		public byte[] getValue(){
-			return this.value;
-		}
-	}
-	
-	private class fieldObject{
-		private byte[] access_flags = new byte[2];
-		private byte[] name_index = new byte[2];
-		private byte[] descriptor_index = new byte[2];
-		private byte[] attributes_count = new byte[2];
-		private Object[] attributes_info;
-		fieldObject() throws Exception{
-			fis.read(access_flags, 0, 2);
-			log.debug("FIELD: Access flags: \t" + Utils.getHexa(access_flags));
-			
-			fis.read(name_index, 0, 2);
-			log.debug("FIELD: Name index: \t\t" + Utils.getHexa(name_index));
-			
-			fis.read(descriptor_index, 0, 2);
-			log.debug("FIELD: Descriptor index: \t" + Utils.getHexa(descriptor_index));
-			
-			fis.read(attributes_count, 0, 2);
-			log.debug("FIELD: Attribures count: \t" + Utils.getHexa(attributes_count));
-			
-			attributes_info = new Object[Utils.parseByteToInt(attributes_count)];
-			for(int i=0; i<Utils.parseByteToInt(attributes_count); i++){
-				attributes_info[i] = new attributeObject();
-			}
-		}
-	}
-	
-	private class attributeObject{
-		private byte[] attribute_name_index = new byte[2];
-		private byte[] attribute_length = new byte[4];
-		private Object[] attribute_info;
+		fis.read(attribute_name_index, 0, 2);
+		fis.read(attribute_length, 0, 4);
 		
-		attributeObject() throws Exception{
-			fis.read(attribute_name_index, 0, 2);
-			log.debug("ATTR: Attribute name index: " + Utils.getHexa(attribute_name_index));
-			
-			fis.read(attribute_length, 0, 4);
-			log.debug("ATTR: Attribute length: \t" + Utils.getHexa(attribute_length));
-			
-			attribute_info = new Object[Utils.parseByteToInt(attribute_length)];
-			for (int i=0; i<Utils.parseByteToInt(attribute_length); i++){
-				byte[] temp = new byte[1];
-				fis.read(temp, 0, 1);
-				log.debug("ATTR: Attribute info: \t" + Utils.getHexa(temp));
-				attribute_info[i] = temp;
-			}
-		}
-	}
-	
-	private class methodsObject{
-		private byte[] access_flags = new byte[2];
-		private byte[] name_index = new byte[2];
-		private byte[] descriptor_index = new byte[2];
-		private byte[] attributes_count = new byte[2];
-		private Object[] attributes_info;
+		log.debug("ATTR: Attribute name index: " + Utils.getHexa(attribute_name_index));
+		log.debug("ATTR: Attribute length: \t" + Utils.getHexa(attribute_length));
 		
-		methodsObject() throws Exception{
-			fis.read(access_flags, 0, 2);
-			log.debug("METH: Access flags: \t" + Utils.getHexa(access_flags));
-			
-			fis.read(name_index, 0, 2);
-			log.debug("METH: Name index: \t\t" + Utils.getHexa(name_index));
-			
-			fis.read(descriptor_index, 0, 2);
-			log.debug("METH: Descriptor index: \t" + Utils.getHexa(descriptor_index));
-			
-			fis.read(attributes_count, 0, 2);
-			log.debug("METH: Attribures count: \t" + Utils.getHexa(attributes_count));
-			
-			attributes_info = new Object[Utils.parseByteToInt(attributes_count)];
-			for(int i=0; i<Utils.parseByteToInt(attributes_count); i++){
-				attributes_info[i] = new attributeObject();
-			}
-			
+		Attribute result = new Attribute(attribute_name_index, attribute_length);
+		
+		attribute_info = new byte[result.getAttributeLength()];
+		
+		for (int i=0; i<result.getAttributeLength(); i++){
+			byte[] temp = new byte[1];
+			fis.read(temp, 0, 1);
+			log.debug("ATTR: Attribute info: \t" + Utils.getHexa(temp));
+			attribute_info[i] = temp[0];
 		}
+		result.setAttributeInfo(attribute_info);
+		return result;
 	}
+
 
 }
