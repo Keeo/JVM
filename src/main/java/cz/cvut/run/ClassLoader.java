@@ -312,8 +312,8 @@ public class ClassLoader {
 					log.error("Unsupported tag in constant pool!");
 					throw new Exception("Unsupported tag in constant pool!");
 			}
-			
 		}
+		cf.setConstantPool(constantPool);
 	}
 	
 	

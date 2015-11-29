@@ -1,7 +1,9 @@
 package cz.cvut.run;
 
+import java.util.ArrayList;
+
 import cz.cvut.run.classfile.Attributes;
-import cz.cvut.run.classfile.ConstantPool;
+import cz.cvut.run.classfile.ConstantPoolElement;
 import cz.cvut.run.classfile.Fields;
 import cz.cvut.run.classfile.Interfaces;
 import cz.cvut.run.classfile.Methods;
@@ -10,7 +12,7 @@ public class ClassFile {
 	private int minorVersion;
 	private int majorVersion;
 	private int constantPoolCount;
-	private ConstantPool constantPool = new ConstantPool();
+	private ArrayList<ConstantPoolElement> constantPool;
 	private int accessFlags;
 	private int thisClass;
 	private int superClass;
@@ -85,8 +87,11 @@ public class ClassFile {
 	public void setAttributesCount(int attributesCount) {
 		this.attributesCount = attributesCount;
 	}
-	public ConstantPool getConstantPool() {
+	public ArrayList<ConstantPoolElement> getConstantPool() {
 		return constantPool;
+	}
+	public void setConstantPool(ArrayList<ConstantPoolElement> constantPool) {
+		this.constantPool = constantPool;
 	}
 	public Interfaces getInterfaces() {
 		return interfaces;
