@@ -190,6 +190,8 @@ public class ClassLoader {
 			log.debug("METH: Attribures count: \t" + Utils.getHexa(attributes_count));
 			
 			Method m = new Method(access_flags, name_index, descriptor_index, attributes_count);
+			log.debug("METH: name: " + cf.getConstantPool().get(m.getName_index()-1));
+			log.debug("METH: descriptor: " + cf.getConstantPool().get(m.getDescriptor_index()-1));
 			
 			ArrayList<Attribute> attributes = new ArrayList<Attribute>();
 			for(int j=0; j<m.getAttributesCount(); j++){
