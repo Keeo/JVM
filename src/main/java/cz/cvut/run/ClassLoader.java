@@ -2,9 +2,22 @@ package cz.cvut.run;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
 
+import cz.cvut.run.classfile.ConstantPoolElement;
+import cz.cvut.run.classfile.constantpool.ConstClassInfo;
+import cz.cvut.run.classfile.constantpool.ConstDoubleInfo;
+import cz.cvut.run.classfile.constantpool.ConstFieldRefInfo;
+import cz.cvut.run.classfile.constantpool.ConstFloatInfo;
+import cz.cvut.run.classfile.constantpool.ConstIntegerInfo;
+import cz.cvut.run.classfile.constantpool.ConstInterfaceMethodRefInfo;
+import cz.cvut.run.classfile.constantpool.ConstLongInfo;
+import cz.cvut.run.classfile.constantpool.ConstMethodRefInfo;
+import cz.cvut.run.classfile.constantpool.ConstNameAndTypeInfo;
+import cz.cvut.run.classfile.constantpool.ConstStringInfo;
+import cz.cvut.run.classfile.constantpool.ConstUtf8Info;
 import cz.cvut.run.constants.Constants;
 import cz.cvut.run.utils.Utils;
 
@@ -50,7 +63,7 @@ public class ClassLoader {
 	Object[] fields;
 	Object[] methods;
 	Object[] attributes;
-	
+	protected ClassFile cf = new ClassFile();
 	
 	
 	ClassLoader(File file) throws Exception{
@@ -66,7 +79,6 @@ public class ClassLoader {
 	
 	private void readFile() throws Exception{
 		fis = new FileInputStream(file);
-		ClassFile cf = new ClassFile();
 		
 		fis.read(magic, 0, 4);
 		if (!String.format("0x%02X%02X%02X%02X", magic[0], magic[1], magic[2], magic[3]).equals(Constants.JAVA_MAGIC)){
@@ -79,9 +91,11 @@ public class ClassLoader {
 		//
 		fis.read(minor_version, 0, 2);
 		log.debug("Minor version: \t\t" + Utils.getHexa(minor_version));
+		cf.setMinorVersion(Utils.parseByteToInt(minor_version));
+		
 		fis.read(major_version, 0, 2);
 		log.debug("Major version: \t\t" + Utils.getHexa(major_version));
-		
+		cf.setMajorVersion(Utils.parseByteToInt(major_version));
 		
 		//
 		// Read constant pool
@@ -89,6 +103,7 @@ public class ClassLoader {
 		fis.read(constant_pool_count, 0, 2);
 		log.debug("Constant pool count: \t" + Utils.getHexa(constant_pool_count));
 		constantPoolCount = Utils.parseByteToInt(constant_pool_count);
+		cf.setConstantPoolCount(constantPoolCount);
 		readConstants();
 		
 		
@@ -180,7 +195,7 @@ public class ClassLoader {
 	 */
 	private void readConstants() throws Exception {
 		byte[] tagArr = new byte[1];
-		constantPool = new Object[constantPoolCount];
+		ArrayList<ConstantPoolElement> constantPool = new ArrayList<ConstantPoolElement>();
 		
 		for (int i=0; i<constantPoolCount-1; i++){
 			fis.read(tagArr, 0, 1);
@@ -190,7 +205,7 @@ public class ClassLoader {
 				case TAG_INTEGER:{					// 4 - uvádí poèet bytu za tagem
 					byte[] value = new byte[4]; 
 					fis.read(value, 0, 4);
-					constantPool[i] = new constPoolObject(tag, value);
+					constantPool.add(new ConstIntegerInfo(value));
 					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(value));
 					break;
 				}
@@ -198,24 +213,28 @@ public class ClassLoader {
 					// 4
 					byte[] value = new byte[4]; 
 					fis.read(value, 0, 4);
-					constantPool[i] = new constPoolObject(tag, value);
+					constantPool.add(new ConstFloatInfo(value));
 					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(value));
 					break;
 				}
 				case TAG_LONG:{
 					// 4 high  + 4 low
-					byte[] value = new byte[8]; 
-					fis.read(value, 0, 8);
-					constantPool[i] = new constPoolObject(tag, value);
-					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(value));
+					byte[] low = new byte[4];
+					byte[] high = new byte[4];
+					fis.read(low, 0, 4);
+					fis.read(high, 0, 4);
+					constantPool.add(new ConstLongInfo(low, high));
+					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(low)+ " " + Utils.getHexa(high));
 					break;
 				}
 				case TAG_DOUBLE:{
 					// 4 high + 4 low
-					byte[] value = new byte[8]; 
-					fis.read(value, 0, 8);
-					constantPool[i] = new constPoolObject(tag, value);
-					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(value));
+					byte[] low = new byte[4];
+					byte[] high = new byte[4];
+					fis.read(low, 0, 4);
+					fis.read(high, 0, 4);
+					constantPool.add(new ConstDoubleInfo(low, high));
+					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(low)+ " " + Utils.getHexa(high));
 					break;
 				}
 				case TAG_UTF8:{
@@ -224,20 +243,16 @@ public class ClassLoader {
 					fis.read(length, 0, 2);
 					byte[] value = new byte[Utils.parseByteToInt(length)];
 					fis.read(value, 0, value.length);
-					byte[] finalValue = new byte[2 + value.length];
-					finalValue[0] = length[0];
-					for(int j=2; j<finalValue.length; j++){
-						finalValue[j] = value[j-2];
-					}
-					constantPool[i] = new constPoolObject(tag, finalValue);
-					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(finalValue));
+					
+					constantPool.add(new ConstUtf8Info(length, value));
+					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(value));
 					break;
 				}
 				case TAG_STRING:{
 					// 2
 					byte[] value = new byte[2]; 
 					fis.read(value, 0, 2);
-					constantPool[i] = new constPoolObject(tag, value);
+					constantPool.add(new ConstStringInfo(value));
 					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(value));
 					break;
 				}
@@ -245,40 +260,52 @@ public class ClassLoader {
 					// 2
 					byte[] value = new byte[2]; 
 					fis.read(value, 0, 2);
-					constantPool[i] = new constPoolObject(tag, value);
+					constantPool.add(new ConstClassInfo(value));
 					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(value));
 					break;
 				}
 				case TAG_FIELDREF:{
 					// 2 class index + 2 name and type index
-					byte[] value = new byte[4]; 
-					fis.read(value, 0, 4);
-					constantPool[i] = new constPoolObject(tag, value);
-					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(value));
+					byte[] class_index = new byte[2]; 
+					byte[] name_and_type_index = new byte[2]; 
+					fis.read(class_index, 0, 2);
+					fis.read(name_and_type_index, 0, 2);
+					
+					constantPool.add(new ConstFieldRefInfo(class_index, name_and_type_index));
+					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(class_index)+ "" + Utils.getHexa(name_and_type_index));
 					break;
 				}
 				case TAG_METHODREF:{
 					// 2 class index 2 name and type index
-					byte[] value = new byte[4]; 
-					fis.read(value, 0, 4);
-					constantPool[i] = new constPoolObject(tag, value);
-					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(value));
+					byte[] class_index = new byte[2]; 
+					byte[] name_and_type_index = new byte[2]; 
+					fis.read(class_index, 0, 2);
+					fis.read(name_and_type_index, 0, 2);
+					
+					constantPool.add(new ConstMethodRefInfo(class_index, name_and_type_index));
+					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(class_index)+ "" + Utils.getHexa(name_and_type_index));
 					break;
 				}
 				case TAG_INTERFACE_METHODREF:{
 					// 2 class index + 2 name and type index
-					byte[] value = new byte[4]; 
-					fis.read(value, 0, 4);
-					constantPool[i] = new constPoolObject(tag, value);
-					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(value));
+					byte[] class_index = new byte[2]; 
+					byte[] name_and_type_index = new byte[2]; 
+					fis.read(class_index, 0, 2);
+					fis.read(name_and_type_index, 0, 2);
+					
+					constantPool.add(new ConstInterfaceMethodRefInfo(class_index, name_and_type_index));
+					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(class_index)+ "" + Utils.getHexa(name_and_type_index));
 					break;
 				}
 				case TAG_NAME_AND_TYPE:{
 					// 2 name index 2 descriptor index
-					byte[] value = new byte[4]; 
-					fis.read(value, 0, 4);
-					constantPool[i] = new constPoolObject(tag, value);
-					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(value));
+					byte[] class_index = new byte[2]; 
+					byte[] descriptor_index = new byte[2]; 
+					fis.read(class_index, 0, 2);
+					fis.read(descriptor_index, 0, 2);
+					
+					constantPool.add(new ConstNameAndTypeInfo(class_index, descriptor_index));
+					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(class_index)+ "" + Utils.getHexa(descriptor_index));
 					break;
 				}
 				default:
@@ -289,26 +316,6 @@ public class ClassLoader {
 		}
 	}
 	
-	/**
-	 * Tøída která reprezentuje jednu hodnotu z constatnt poolu
-	 * @author Jeff
-	 *
-	 */
-	private class constPoolObject{
-		private byte tag;
-		private byte[] value;
-		constPoolObject(byte tag, byte[] value){
-			this.tag = tag;
-			this.value = value;
-		}
-		
-		public byte getTag(){
-			return this.tag;
-		}
-		public byte[] getValue(){
-			return this.value;
-		}
-	}
 	
 	private class fieldObject{
 		private byte[] access_flags = new byte[2];
