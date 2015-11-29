@@ -28,4 +28,17 @@ public class Utils {
 	public static int unsignedToBytes(byte b) {
 		 return b & 0xFF;
 	}
+	
+	public static String getHexa(byte[] input){
+		String format = "";
+		Object [] inputObject = new Object[input.length];
+		for(int i=0; i<input.length; i++){
+			format += "%02X ";
+			inputObject[i] = input[i];
+		}
+		
+		return String.format(format, inputObject);
+	}
+	
+	
 }
