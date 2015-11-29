@@ -2,7 +2,6 @@ package cz.cvut.run;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 
 import org.apache.log4j.Logger;
 
