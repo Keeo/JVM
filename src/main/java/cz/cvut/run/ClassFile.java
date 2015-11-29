@@ -2,11 +2,11 @@ package cz.cvut.run;
 
 import java.util.ArrayList;
 
-import cz.cvut.run.classfile.Attributes;
+import cz.cvut.run.classfile.Attribute;
 import cz.cvut.run.classfile.ConstantPoolElement;
-import cz.cvut.run.classfile.Fields;
-import cz.cvut.run.classfile.Interfaces;
-import cz.cvut.run.classfile.Methods;
+import cz.cvut.run.classfile.Field;
+import cz.cvut.run.classfile.Interface;
+import cz.cvut.run.classfile.Method;
 
 public class ClassFile {
 	private int minorVersion;
@@ -17,13 +17,13 @@ public class ClassFile {
 	private int thisClass;
 	private int superClass;
 	private int interfaceCount;
-	private Interfaces interfaces = new Interfaces();
+	private ArrayList<Interface> interfaces;
 	private int fieldCount;
-	private Fields fields = new Fields();
+	private ArrayList<Field> fields;
 	private int methodsCount;
-	private Methods methods = new Methods();
+	private ArrayList<Method> methods;
 	private int attributesCount;
-	private Attributes attributes = new Attributes();
+	private ArrayList<Attribute> attributes;
 	
 	
 
@@ -93,17 +93,29 @@ public class ClassFile {
 	public void setConstantPool(ArrayList<ConstantPoolElement> constantPool) {
 		this.constantPool = constantPool;
 	}
-	public Interfaces getInterfaces() {
+	public ArrayList<Interface> getInterfaces() {
 		return interfaces;
 	}
-	public Fields getFields() {
+	public ArrayList<Field> getFields() {
 		return fields;
 	}
-	public Methods getMethods() {
+	public ArrayList<Method> getMethods() {
 		return methods;
 	}
-	public Attributes getAttributes() {
+	public ArrayList<Attribute> getAttributes() {
 		return attributes;
+	}
+	public void settInterfaces(ArrayList<Interface> interfaces) {
+		this.interfaces = interfaces;
+	}
+	public void setFields(ArrayList<Field> fields) {
+		this.fields = fields;
+	}
+	public void setMethods(ArrayList<Method> methods) {
+		this.methods = methods;
+	}
+	public void setAttributes(ArrayList<Attribute> attributes) {
+		this.attributes = attributes;
 	}
 	
 	

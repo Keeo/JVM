@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import org.apache.log4j.Logger;
 
 import cz.cvut.run.classfile.ConstantPoolElement;
+import cz.cvut.run.classfile.Interface;
 import cz.cvut.run.classfile.constantpool.ConstClassInfo;
 import cz.cvut.run.classfile.constantpool.ConstDoubleInfo;
 import cz.cvut.run.classfile.constantpool.ConstFieldRefInfo;
@@ -181,11 +182,14 @@ public class ClassLoader {
 	 * @throws Exception
 	 */
 	private void readInterfaces() throws Exception{
+		ArrayList<Interface> interfaces = new ArrayList<Interface>();
 		byte[] interfaceRef = new byte[2];
 		for(int i=0; i<interfaceCount; i++){
 			fis.read(interfaceRef, 0, 2);
 			log.debug("Interface reference: \t\t" + Utils.getHexa(interfaceRef));
+			interfaces.add(new Interface(interfaceRef));
 		}
+		cf.settInterfaces(interfaces);
 		
 	}
 	
