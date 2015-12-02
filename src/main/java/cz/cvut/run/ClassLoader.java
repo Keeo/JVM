@@ -234,7 +234,7 @@ public class ClassLoader {
 	}
 
 	/**
-	 * Metoda naète všechny interfejsi - nejsou ádné, proto teï nic nenaèítá
+	 * Metoda naÄte vÅ¡echny interfejsi - nejsou Å¾Ã¡dnÃ©, proto teÄ nic nenaÄÃ­tÃ¡
 	 * @throws Exception
 	 */
 	private void readInterfaces() throws Exception{
@@ -249,7 +249,7 @@ public class ClassLoader {
 	}
 	
 	/**
-	 * Metoda naète všechny prvky z Constant poolu
+	 * Metoda naÄte vÅ¡echny prvky z Constant poolu
 	 * @throws Exception
 	 */
 	private void readConstants() throws Exception {
@@ -261,7 +261,7 @@ public class ClassLoader {
 			
 			byte tag = tagArr[0];
 			switch(tag){
-				case TAG_INTEGER:{					// 4 - uvádí poèet bytu za tagem
+				case TAG_INTEGER:{					// 4 - uvÃ¡dÃ­ poÄet bytu za tagem
 					byte[] value = new byte[4]; 
 					fis.read(value, 0, 4);
 					constantPool.add(new ConstIntegerInfo(value));
