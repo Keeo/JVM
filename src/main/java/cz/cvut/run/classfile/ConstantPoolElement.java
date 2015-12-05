@@ -6,4 +6,5 @@ public class ConstantPoolElement extends ClassElement {
 	public byte getTag(){
 		return this.tag;
 	}
+
 }
