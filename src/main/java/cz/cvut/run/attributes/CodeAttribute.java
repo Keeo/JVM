@@ -2,10 +2,14 @@ package cz.cvut.run.attributes;
 
 import java.util.ArrayList;
 
+import org.apache.log4j.Logger;
+
+import cz.cvut.run.ClassLoader;
 import cz.cvut.run.classfile.Attribute;
 import cz.cvut.run.utils.Utils;
 
 public class CodeAttribute extends Attribute {
+	private static final Logger log = Logger.getLogger(ClassLoader.class);
 	private int maxStack;
 	private int maxLocals;
 	private int codeLength;
@@ -29,6 +33,7 @@ public class CodeAttribute extends Attribute {
 		for(int i=0; i<codeLength; i++){
 			code[i] = attributeInfo[i+8];
 		}
+		log.debug(Utils.getHexa(code));
 		exceptionTableLength = Utils.parseByteToInt(new byte[]{attributeInfo[codeLength+8], attributeInfo[codeLength+9]});
 		
 		int p = codeLength+10;

@@ -79,6 +79,9 @@ public class ClassLoader {
 		}
 	}
 	
+	public ClassFile getClassFile(){
+		return this.cf;
+	}
 	private void readFile() throws Exception{
 		fis = new FileInputStream(file);
 		
