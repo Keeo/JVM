@@ -6,6 +6,10 @@ import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
 
+import cz.cvut.run.attributes.SourceFileAttribute;
+import cz.cvut.run.attributes.CodeAttribute;
+import cz.cvut.run.attributes.ExceptionsAttribute;
+import cz.cvut.run.attributes.ConstantValueAttribute;
 import cz.cvut.run.classfile.Attribute;
 import cz.cvut.run.classfile.ConstantPoolElement;
 import cz.cvut.run.classfile.Field;
@@ -385,9 +389,19 @@ public class ClassLoader {
 		fis.read(attribute_length, 0, 4);
 		
 		log.debug("ATTR: Attribute name index: " + Utils.getHexa(attribute_name_index));
-		log.debug("ATTR: Attribute length: \t" + Utils.getHexa(attribute_length));
-		
-		Attribute result = new Attribute(attribute_name_index, attribute_length);
+		String type = cf.getConstantPool().get(Utils.parseByteToInt(attribute_name_index)-1).toString();
+		log.info("ATTR: Attribute name: " + type);
+		log.debug("ATTR: Attribute length: \t" + Utils.getHexa(attribute_length) + " " +Utils.parseByteToInt(attribute_length));
+		Attribute result = null;
+		if (type.equals("SourceFile")){
+			result = new SourceFileAttribute(attribute_name_index, attribute_length);
+		}else if(type.equals("Code")){
+			result = new CodeAttribute(attribute_name_index, attribute_length);
+		}else if(type.equals("Exceptions")){
+			result = new ExceptionsAttribute(attribute_name_index, attribute_length);
+		}else if(type.equals("ConstantValue")){
+			result = new ConstantValueAttribute(attribute_name_index, attribute_length);
+		}
 		
 		attribute_info = new byte[result.getAttributeLength()];
 		
@@ -400,6 +414,24 @@ public class ClassLoader {
 		result.setAttributeInfo(attribute_info);
 		return result;
 	}
-
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 
 }

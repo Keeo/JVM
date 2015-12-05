@@ -15,6 +15,9 @@ public class ApplicationTest {
 	private static final String TestClassFile001 = DELIMITER + "TestClassFile001.class";
 	private static final String TestWrongFile = TEST_CLASSES_WRONG_PATH + DELIMITER + "createdFiles.lst";
 	
+	private static final String SatClassFile = DELIMITER + "Sat.class";
+	private static final String ExpressionClassFile = DELIMITER + "Expression.class";
+	
     @Test
     public void testMain() throws Exception { // spuštění prázdné aplikace projde bez vyjímky
         JVM.main(null);
@@ -32,12 +35,18 @@ public class ApplicationTest {
     
     @Test()
     public void testSimpleRightPath() throws Exception{ // Jednoduché puštění s odkazem na platnou cestu
-    	JVM.main(new String[] {new java.io.File( "." ).getCanonicalPath()+TEST_CLASSES_PATH + TestClassFile001});
+    	//JVM.main(new String[] {new java.io.File( "." ).getCanonicalPath()+TEST_CLASSES_PATH + TestClassFile001});
     }
     
     @Test(expected=java.lang.Exception.class)
     public void testSimpleRightPathBadFile() throws Exception{ // Jednoduché puštění s odkazem na platnou cestu ale chybný soubor
     	JVM.main(new String[] {new java.io.File( "." ).getCanonicalPath()+ TestWrongFile});
+    }
+    
+    @Test
+    public void testSatRightPath() throws Exception{ // Jednoduché puštění s odkazem na platnou cestu ale chybný soubor
+    	JVM.main(new String[] {new java.io.File( "." ).getCanonicalPath()+TEST_CLASSES_PATH + SatClassFile});
+    	JVM.main(new String[] {new java.io.File( "." ).getCanonicalPath()+TEST_CLASSES_PATH + ExpressionClassFile});
     }
     
     @Test

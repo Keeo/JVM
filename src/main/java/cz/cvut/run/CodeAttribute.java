@@ -3,11 +3,6 @@ package cz.cvut.run;
 import cz.cvut.run.utils.Utils;
 
 public class CodeAttribute {
-	private byte[] attribute_name_index = new byte[2];
-	public int attributeNameIndex;
-	
-	private byte[] attribute_length = new byte[4];
-	public int attributeLength;
 	
 	private byte[] max_stack = new byte[2];
 	public int maxStack;
@@ -35,15 +30,6 @@ public class CodeAttribute {
 	*/
 	
 	CodeAttribute(byte[] input){
-		attribute_name_index[0] = input[0];
-		attribute_name_index[1] = input[1];
-		attributeNameIndex = Utils.parseByteToInt(attribute_name_index);
-		
-		attribute_length[0] = input[2];
-		attribute_length[1] = input[3];
-		attribute_length[2] = input[4];
-		attribute_length[3] = input[5];
-		attributeLength = Utils.parseByteToInt(attribute_length);
 		
 		max_stack[0] = input[6];
 		max_stack[1] = input[7];
