@@ -391,7 +391,7 @@ public class ClassLoader {
 		log.debug("ATTR: Attribute name index: " + Utils.getHexa(attribute_name_index));
 		String type = cf.getConstantPool().get(Utils.parseByteToInt(attribute_name_index)-1).toString();
 		log.info("ATTR: Attribute name: " + type);
-		log.info("ATTR: Attribute length: \t" + Utils.getHexa(attribute_length) + " " +Utils.parseByteToInt(attribute_length));
+		log.debug("ATTR: Attribute length: \t" + Utils.getHexa(attribute_length) + " " +Utils.parseByteToInt(attribute_length));
 		Attribute result = null;
 		if (type.equals("SourceFile")){
 			result = new SourceFileAttribute(attribute_name_index, attribute_length);
