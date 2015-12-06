@@ -1,5 +1,9 @@
 package cz.cvut.run.utils;
 
+import java.lang.reflect.Field;
+
+import cz.cvut.run.constants.Constants;
+
 public class Utils {
 
 	public static String getString(byte[] input){
@@ -39,6 +43,26 @@ public class Utils {
 		
 		return String.format(format, inputObject);
 	}
+	
+	public static String getHexa(byte input){
+		return String.format("%02X", input);
+	}
+	
+	public static String getInstructionName(byte instruction) throws IllegalArgumentException, IllegalAccessException{
+		Constants c = new Constants();
+		for(Field f: c.getClass().getFields()){
+			if (f.getName().startsWith("INSTRUCTION_")){
+				byte tmp = 0;
+				tmp = f.getByte(c);
+				if (instruction == tmp){
+					return f.getName();
+				}
+			}
+		}
+		return "";
+	}
+	
+	
 	
 	
 }

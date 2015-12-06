@@ -2,9 +2,14 @@ package cz.cvut.run.classfile;
 
 import java.util.ArrayList;
 
+import org.apache.log4j.Logger;
+
+import cz.cvut.run.ClassFile;
+import cz.cvut.run.attributes.CodeAttribute;
 import cz.cvut.run.utils.Utils;
 
 public class Method extends ClassElement {
+	private static final Logger log = Logger.getLogger(ClassElement.class);
 	private byte[] access_flags;
 	private int name_index;
 	private int descriptor_index;
@@ -58,5 +63,19 @@ public class Method extends ClassElement {
 	public void setAttributes_info(ArrayList<Attribute> attributes_info) {
 		this.attributes_info = attributes_info;
 	}
+	
+	public byte[] getCode(int index) throws Exception{
+		for(Attribute attr: attributes_info){
+			int nameIndex = attr.getAttributeNameIndex();
+			
+			if(nameIndex == index+1){
+				CodeAttribute ca = (CodeAttribute) attr;
+				return ca.getCode();
+			}
+		}
+		log.error("Method doesnt have CODE attribute!");
+		throw new Exception("Method doesnt have CODE attribute!");
+	}
+	
 
 }

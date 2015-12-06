@@ -2,13 +2,18 @@ package cz.cvut.run;
 
 import java.util.ArrayList;
 
+import org.apache.log4j.Logger;
+
 import cz.cvut.run.classfile.Attribute;
 import cz.cvut.run.classfile.ConstantPoolElement;
 import cz.cvut.run.classfile.Field;
 import cz.cvut.run.classfile.Interface;
 import cz.cvut.run.classfile.Method;
+import cz.cvut.run.classfile.constantpool.ConstUtf8Info;
+import cz.cvut.run.constants.Constants;
 
 public class ClassFile {
+	private static final Logger log = Logger.getLogger(ClassFile.class);
 	private int minorVersion;
 	private int majorVersion;
 	private int constantPoolCount;
@@ -118,6 +123,28 @@ public class ClassFile {
 		this.attributes = attributes;
 	}
 	
+	public Method getInitMethod() throws Exception{
+		for(Method m: this.methods){
+			int nameIndex = m.getName_index()-1;
+			log.info(this.constantPool.get(nameIndex));
+			if (this.constantPool.get(nameIndex).toString().equals(Constants.INIT)){
+				return m;
+			}
+		}
+		log.error("Not found INIT method in class file!");
+		throw new Exception("Not found INIT method in class file!");
+	}
 	
+	public int getCodeIndex(){
+		for(int i=0; i<constantPool.size(); i++){
+			if (constantPool.get(i).getTag() == Constants.TAG_UTF8){
+				ConstUtf8Info utf8 = (ConstUtf8Info) constantPool.get(i);
+				if (utf8.toString().equals(Constants.CODE)){
+					return i;
+				}
+			}
+		}
+		return -1;
+	}
 	
 }
