@@ -50,6 +50,13 @@ public class JVM {
 					break;
 				}
 				case Constants.INSTRUCTION_aload_0: {
+					CodeAttribute ca = (CodeAttribute) m.getAttributes_info().get(0);
+					System.out.println(ca.getAttributesCount());
+					int indexName = ca.getAttributes().get(0).getAttributeNameIndex()-1;
+					System.out.println(cf.getConstantPool().get(indexName).toString());
+					System.out.println(Utils.getHexa(ca.getAttributes().get(0).getAttributeInfo()));
+					System.out.println(Utils.getHexa(ca.getAttributes().get(1).getAttributeInfo()));
+					//System.out.println(Utils.getHexa(m.getAttributes_info().get(0).getAttributeInfo()));
 					break;
 				}
 				case Constants.INSTRUCTION_aload_1: {

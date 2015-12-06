@@ -60,9 +60,12 @@ public class CodeAttribute extends Attribute {
 			byte[] attributeLength = new byte[]{attributeInfo[++p], attributeInfo[++p], attributeInfo[++p], attributeInfo[++p]};
 			Attribute a = new Attribute(attributeNameIndex, attributeLength);
 			byte[] tmpAttributeInfo = new byte[Utils.parseByteToInt(attributeLength)];
+			for(int j=0; j<Utils.parseByteToInt(attributeLength); j++){
+				tmpAttributeInfo[j] = attributeInfo[++p];
+			}
 			a.setAttributeInfo(tmpAttributeInfo);
 			attributes.add(a);
-			p = p + Utils.parseByteToInt(attributeLength);
+			//p = p + Utils.parseByteToInt(attributeLength);
 		}
 	}
 	
