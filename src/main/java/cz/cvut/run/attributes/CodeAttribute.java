@@ -9,7 +9,7 @@ import cz.cvut.run.classfile.Attribute;
 import cz.cvut.run.utils.Utils;
 
 public class CodeAttribute extends Attribute {
-	private static final Logger log = Logger.getLogger(ClassLoader.class);
+	private static final Logger log = Logger.getLogger(CodeAttribute.class);
 	private int maxStack;
 	private int maxLocals;
 	private int codeLength;

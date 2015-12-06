@@ -2,6 +2,8 @@ package cz.cvut.run;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Stack;
 import cz.cvut.run.attributes.CodeAttribute;
 import cz.cvut.run.classfile.Method;
@@ -20,8 +22,9 @@ public class JVM {
         if (args != null && args.length > 0) {
             for (int i = 0; i < args.length; i++) {
                 classes.add(new ClassLoader(new File(args[i])));
-                execute(classes.get(i).getClassFile());
+               
             }
+            execute(classes.get(0).getClassFile());
         } else {
             log.error("Please specify Class files in argumets!");
         }
@@ -32,13 +35,23 @@ public class JVM {
     
     private static void execute(ClassFile cf) throws Exception{
     	Stack<Byte> stack = new Stack<Byte>();
+    	LinkedList<Byte> byteCode = new LinkedList<Byte>();
     	Method init = cf.getInitMethod();
+    	Method main = cf.getMainMethod();
     	int codeIndex = cf.getCodeIndex();
+    	
     	byte[] initCode = init.getCode(codeIndex);
-    	insertToStack(stack, initCode);
-    	Method m = init;
-    	while (!stack.isEmpty()){
-    		byte instruction = stack.pop();
+    	byte[] mainCode = main.getCode(codeIndex);
+    	
+    	for(int i=0; i<initCode.length; i++){
+    		byteCode.add(initCode[i]);
+    	}
+    	for(int i=0; i<mainCode.length; i++){
+    		byteCode.add(mainCode[i]);
+    	}
+    	
+    	while (!byteCode.isEmpty()){
+    		byte instruction = byteCode.removeFirst();
     		Utils.getInstructionName(instruction);
     		log.info("Instruction: " + Utils.getInstructionName(instruction));
     		
@@ -50,13 +63,15 @@ public class JVM {
 					break;
 				}
 				case Constants.INSTRUCTION_aload_0: {
-					CodeAttribute ca = (CodeAttribute) m.getAttributes_info().get(0);
+					/*CodeAttribute ca = (CodeAttribute) m.getAttributes_info().get(0);
 					System.out.println(ca.getAttributesCount());
 					int indexName = ca.getAttributes().get(0).getAttributeNameIndex()-1;
-					System.out.println(cf.getConstantPool().get(indexName).toString());
+					int indexName2 = ca.getAttributes().get(1).getAttributeNameIndex()-1;
+					System.out.println(Utils.getHexa(initCode));
+					System.out.println(cf.getConstantPool().get(indexName2).toString());
 					System.out.println(Utils.getHexa(ca.getAttributes().get(0).getAttributeInfo()));
 					System.out.println(Utils.getHexa(ca.getAttributes().get(1).getAttributeInfo()));
-					//System.out.println(Utils.getHexa(m.getAttributes_info().get(0).getAttributeInfo()));
+					//System.out.println(Utils.getHexa(m.getAttributes_info().get(0).getAttributeInfo()));*/
 					break;
 				}
 				case Constants.INSTRUCTION_aload_1: {
@@ -171,6 +186,10 @@ public class JVM {
 					break;
 				}
 				case Constants.INSTRUCTION_invokespecial: {
+					byte arg0 = byteCode.removeFirst();
+					byte arg1 = byteCode.removeFirst();
+					log.info("invokespecial args: " + Utils.getHexa(arg0) + " " + Utils.getHexa(arg1));
+					Instructions.invokeSpecial(stack, arg0, arg1, cf);
 					break;
 				}
 				case Constants.INSTRUCTION_invokestatic: {
@@ -216,6 +235,7 @@ public class JVM {
 					break;
 				}
 				case Constants.INSTRUCTION_return: {
+					stack.clear();
 					break;
 				}
 				default:{

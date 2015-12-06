@@ -238,6 +238,9 @@ public class Constants {
 	public static final byte INSTRUCTION_swap = (byte) (0x5f & 0xFF);
 	public static final byte INSTRUCTION_tableswitch = (byte) (0xaa & 0xFF);
 	public static final byte INSTRUCTION_wide = (byte) (0xc4 & 0xFF);
+
+
+	public static final Object MAIN = "main";
 	
 	
 }
