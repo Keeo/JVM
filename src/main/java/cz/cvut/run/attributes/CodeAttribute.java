@@ -13,7 +13,7 @@ public class CodeAttribute extends Attribute {
 	private int maxStack;
 	private int maxLocals;
 	private int codeLength;
-	private byte[] code;
+	private ArrayList<Byte> code;
 	private int exceptionTableLength;
 	private int attributesCount;
 	
@@ -29,9 +29,9 @@ public class CodeAttribute extends Attribute {
 		maxStack = Utils.parseByteToInt(new byte[]{attributeInfo[0], attributeInfo[1]});
 		maxLocals = Utils.parseByteToInt(new byte[]{attributeInfo[2], attributeInfo[3]});
 		codeLength = Utils.parseByteToInt(new byte[]{attributeInfo[4], attributeInfo[5], attributeInfo[6], attributeInfo[7]});
-		code = new byte[codeLength];
+		code = new ArrayList<Byte>(codeLength);
 		for(int i=0; i<codeLength; i++){
-			code[i] = attributeInfo[i+8];
+			code.add(i, attributeInfo[i+8]);
 		}
 		log.debug(Utils.getHexa(code));
 		exceptionTableLength = Utils.parseByteToInt(new byte[]{attributeInfo[codeLength+8], attributeInfo[codeLength+9]});
@@ -82,7 +82,7 @@ public class CodeAttribute extends Attribute {
 		return codeLength;
 	}
 
-	public byte[] getCode() {
+	public ArrayList<Byte> getCode() {
 		return code;
 	}
 

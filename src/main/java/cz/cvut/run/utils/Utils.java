@@ -1,6 +1,7 @@
 package cz.cvut.run.utils;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 
 import cz.cvut.run.constants.Constants;
 
@@ -60,6 +61,17 @@ public class Utils {
 			}
 		}
 		return "";
+	}
+
+	public static Object getHexa(ArrayList<Byte> code) {
+		String format = "";
+		Object [] inputObject = new Object[code.size()];
+		for(int i=0; i<code.size(); i++){
+			format += "%02X ";
+			inputObject[i] = code.get(i);
+		}
+		
+		return String.format(format, inputObject);
 	}
 	
 	
