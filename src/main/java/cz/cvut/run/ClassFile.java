@@ -146,5 +146,16 @@ public class ClassFile {
 		}
 		return -1;
 	}
+	public Method getMainMethod() throws Exception {
+		for(Method m: this.methods){
+			int nameIndex = m.getName_index()-1;
+			log.info(this.constantPool.get(nameIndex));
+			if (this.constantPool.get(nameIndex).toString().equals(Constants.MAIN)){
+				return m;
+			}
+		}
+		log.error("Not found MAIN method in class file!");
+		throw new Exception("Not found MAIN method in class file!");
+	}
 	
 }

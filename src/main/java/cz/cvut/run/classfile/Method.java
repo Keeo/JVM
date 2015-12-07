@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
 
-import cz.cvut.run.ClassFile;
 import cz.cvut.run.attributes.CodeAttribute;
 import cz.cvut.run.utils.Utils;
 
@@ -64,7 +63,7 @@ public class Method extends ClassElement {
 		this.attributes_info = attributes_info;
 	}
 	
-	public byte[] getCode(int index) throws Exception{
+	public ArrayList<Byte> getCode(int index) throws Exception{
 		for(Attribute attr: attributes_info){
 			int nameIndex = attr.getAttributeNameIndex();
 			

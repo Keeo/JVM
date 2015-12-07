@@ -9,11 +9,11 @@ import cz.cvut.run.classfile.Attribute;
 import cz.cvut.run.utils.Utils;
 
 public class CodeAttribute extends Attribute {
-	private static final Logger log = Logger.getLogger(ClassLoader.class);
+	private static final Logger log = Logger.getLogger(CodeAttribute.class);
 	private int maxStack;
 	private int maxLocals;
 	private int codeLength;
-	private byte[] code;
+	private ArrayList<Byte> code;
 	private int exceptionTableLength;
 	private int attributesCount;
 	
@@ -29,9 +29,9 @@ public class CodeAttribute extends Attribute {
 		maxStack = Utils.parseByteToInt(new byte[]{attributeInfo[0], attributeInfo[1]});
 		maxLocals = Utils.parseByteToInt(new byte[]{attributeInfo[2], attributeInfo[3]});
 		codeLength = Utils.parseByteToInt(new byte[]{attributeInfo[4], attributeInfo[5], attributeInfo[6], attributeInfo[7]});
-		code = new byte[codeLength];
+		code = new ArrayList<Byte>(codeLength);
 		for(int i=0; i<codeLength; i++){
-			code[i] = attributeInfo[i+8];
+			code.add(i, attributeInfo[i+8]);
 		}
 		log.debug(Utils.getHexa(code));
 		exceptionTableLength = Utils.parseByteToInt(new byte[]{attributeInfo[codeLength+8], attributeInfo[codeLength+9]});
@@ -60,9 +60,12 @@ public class CodeAttribute extends Attribute {
 			byte[] attributeLength = new byte[]{attributeInfo[++p], attributeInfo[++p], attributeInfo[++p], attributeInfo[++p]};
 			Attribute a = new Attribute(attributeNameIndex, attributeLength);
 			byte[] tmpAttributeInfo = new byte[Utils.parseByteToInt(attributeLength)];
+			for(int j=0; j<Utils.parseByteToInt(attributeLength); j++){
+				tmpAttributeInfo[j] = attributeInfo[++p];
+			}
 			a.setAttributeInfo(tmpAttributeInfo);
 			attributes.add(a);
-			p = p + Utils.parseByteToInt(attributeLength);
+			//p = p + Utils.parseByteToInt(attributeLength);
 		}
 	}
 	
@@ -79,7 +82,7 @@ public class CodeAttribute extends Attribute {
 		return codeLength;
 	}
 
-	public byte[] getCode() {
+	public ArrayList<Byte> getCode() {
 		return code;
 	}
 
