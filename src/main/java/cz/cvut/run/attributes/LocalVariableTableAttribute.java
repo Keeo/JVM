@@ -28,50 +28,11 @@ public class LocalVariableTableAttribute extends Attribute{
 		}
 	}
 	
-	
-	private class LocalVariable{
-		private byte[] startPc = new byte[2];
-		private byte[] length = new byte[2];
-		private byte[] nameIndex = new byte[2];
-		private byte[] descriptionIndex = new byte[2];
-		private byte[] index = new byte[2];
-		
-		LocalVariable(byte[] input){
-			this.startPc[0] = input[0];
-			this.startPc[1] = input[1];
-			
-			this.length[0] = input[2];
-			this.length[1] = input[3];
-		
-			this.nameIndex[0] = input[4];
-			this.nameIndex[1] = input[5];
-			
-			this.descriptionIndex[0] = input[6];
-			this.descriptionIndex[1] = input[7];
-			
-			this.index[0] = input[8];
-			this.index[1] = input[9];
-		}
-		
-		public byte[] getStartPc() {
-			return startPc;
-		}
+	public LocalVariable getLocalVariable(int index){
+		return localVariables.get(index);
+	}
 
-		public byte[] getLength() {
-			return length;
-		}
-
-		public byte[] getNameIndex() {
-			return nameIndex;
-		}
-
-		public byte[] getDescriptionIndex() {
-			return descriptionIndex;
-		}
-
-		public byte[] getIndex() {
-			return index;
-		}		
-		
+	public void setLocalVariable(int index, LocalVariable l){
+		localVariables.set(index, l);
 	}
 }
