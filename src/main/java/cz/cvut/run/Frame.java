@@ -9,16 +9,18 @@ import org.apache.log4j.Logger;
 
 import cz.cvut.run.attributes.CodeAttribute;
 import cz.cvut.run.attributes.LocalVariableTableAttribute;
-import cz.cvut.run.classfile.Attribute;
 import cz.cvut.run.classfile.ConstantPoolElement;
 import cz.cvut.run.classfile.Method;
 import cz.cvut.run.constants.Constants;
+import cz.cvut.run.stack.IntValue;
+import cz.cvut.run.stack.Null;
+import cz.cvut.run.stack.StackElement;
 import cz.cvut.run.utils.Utils;
 
 public class Frame {
     private static final Logger log = Logger.getLogger(Frame.class);
 	private LocalVariableTableAttribute localVariables;
-	private Stack<Byte> operandStack = new Stack<Byte>();
+	private Stack<StackElement> operandStack = new Stack<StackElement>();
 	private ArrayList<ConstantPoolElement> constantPool;
 	private ArrayList<Byte> byteCode;
 	private CodeAttribute codeAttribute;
@@ -45,12 +47,12 @@ public class Frame {
 	}
 	
 	
-	public Stack<Byte> getStackResult(){
+	public Stack<StackElement> getStackResult(){
 		return this.operandStack;
 	}
 	
 
-	public void setStackResult(Stack<Byte> input){
+	public void setStackResult(Stack<StackElement> input){
 		if (input != null && input.size() > 0){
 			this.operandStack = input;
 		}
@@ -68,6 +70,7 @@ public class Frame {
     		switch (instruction){
 				case Constants.INSTRUCTION_aconst_null: {
 					// neber zadne atributy z bytecode
+					operandStack.push(new Null());
 					break;
 				}
 				case Constants.INSTRUCTION_aload: {
@@ -192,22 +195,22 @@ public class Frame {
 				}
 				case Constants.INSTRUCTION_iconst_0: {
 					// nebere zadne atributy z bytecode
-					
+					operandStack.push(new IntValue(0));
 					break;
 				}
 				case Constants.INSTRUCTION_iconst_1: {
 					// nebere zadne atributy z bytecode
-					
+					operandStack.push(new IntValue(1));
 					break;
 				}
 				case Constants.INSTRUCTION_iconst_2: {
 					// nebere zadne atributy z bytecode
-					
+					operandStack.push(new IntValue(2));
 					break;
 				}
 				case Constants.INSTRUCTION_iconst_3: {
 					// nebere zadne atributy z bytecode
-					
+					operandStack.push(new IntValue(3));
 					break;
 				}
 				case Constants.INSTRUCTION_if_icmpge: {
@@ -354,7 +357,7 @@ public class Frame {
 				}
 				case Constants.INSTRUCTION_return: {
 					// neni nic treba brat z bytecode
-					operandStack.clear();
+					//TODO operandStack.clear();
 					break;
 				}
 				default:{
@@ -362,6 +365,8 @@ public class Frame {
 				}
 			}
     	}
+    	
+    	log.info(operandStack);
     	
     	
     	
