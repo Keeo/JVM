@@ -169,8 +169,9 @@ public class Frame {
 					break;
 				}
 				case Constants.INSTRUCTION_i2c: {
-					// nebere zadne atributy z bytecode
-					
+					IntValue value = (IntValue) operandStack.pop();
+					IntValue result = new IntValue(value.getIntValue() & 0xFF00);
+					operandStack.push(result);
 					break;
 				}
 				
@@ -279,7 +280,7 @@ public class Frame {
 				case Constants.INSTRUCTION_iinc: {
 					byte index = byteCode.get(pc++);
 					byte _const = byteCode.get(pc++);
-					
+					localVariablesArray[index] = new IntValue(((IntValue) localVariablesArray[index]).getIntValue() + _const);
 					break;
 				}
 				case Constants.INSTRUCTION_iload: {
