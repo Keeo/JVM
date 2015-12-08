@@ -14,6 +14,7 @@ import cz.cvut.run.classfile.Method;
 import cz.cvut.run.constants.Constants;
 import cz.cvut.run.stack.IntValue;
 import cz.cvut.run.stack.Null;
+import cz.cvut.run.stack.Reference;
 import cz.cvut.run.stack.StackElement;
 import cz.cvut.run.utils.Utils;
 
@@ -147,8 +148,8 @@ public class Frame {
 					break;
 				}
 				case Constants.INSTRUCTION_bipush: {
-					byte _byte = byteCode.get(pc++);
-					log.info("===================================================" + _byte);
+					int _byte = byteCode.get(pc++);
+					operandStack.push(new IntValue(_byte));
 					break;
 				}
 				case Constants.INSTRUCTION_dup: {
@@ -186,13 +187,16 @@ public class Frame {
 				}
 				
 				case Constants.INSTRUCTION_iadd: {
-					// nebere zadne atributy z bytecode
-					
+					IntValue value1 = (IntValue) operandStack.pop();
+					IntValue value2 = (IntValue) operandStack.pop();
+					operandStack.push(new IntValue(value1.getIntValue() + value2.getIntValue()));
 					break;
 				}
 				case Constants.INSTRUCTION_iand: {
 					// nebere zadne atributy z bytecode
-					
+					IntValue value1 = (IntValue) operandStack.pop();
+					IntValue value2 = (IntValue) operandStack.pop();
+					operandStack.push(new IntValue(value1.getIntValue() & value2.getIntValue()));
 					break;
 				}
 				case Constants.INSTRUCTION_iconst_0: {
@@ -214,42 +218,74 @@ public class Frame {
 				case Constants.INSTRUCTION_if_icmpge: {
 					byte branchbyte1 = byteCode.get(pc++);
 					byte branchbyte2 = byteCode.get(pc++);
+					short s = (short) ((branchbyte1 << 8) | branchbyte2);
+					IntValue value1 = (IntValue) operandStack.pop();
+					IntValue value2 = (IntValue) operandStack.pop();
+					if (value1.getIntValue() >= value2.getIntValue()){
+						//TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! pc = pc-3 + s;
+					}
 					break;
 				}
 				case Constants.INSTRUCTION_if_icmpne: {
 					byte branchbyte1 = byteCode.get(pc++);
 					byte branchbyte2 = byteCode.get(pc++);
-					
+					short s = (short) ((branchbyte1 << 8) | branchbyte2);
+					IntValue value1 = (IntValue) operandStack.pop();
+					IntValue value2 = (IntValue) operandStack.pop();
+					if (value1.getIntValue() != value2.getIntValue()){
+						//TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! pc = pc-3 + s;
+					}
 					break;
 				}
 				case Constants.INSTRUCTION_ifeq: {
 					byte branchbyte1 = byteCode.get(pc++);
 					byte branchbyte2 = byteCode.get(pc++);
-					
+					short s = (short) ((branchbyte1 << 8) | branchbyte2);
+					IntValue value = (IntValue) operandStack.pop();
+					if (value.getIntValue() == 0){
+						//TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! pc = pc-3 + s;
+					}
 					break;
 				}
 				case Constants.INSTRUCTION_ifle: {
 					byte branchbyte1 = byteCode.get(pc++);
 					byte branchbyte2 = byteCode.get(pc++);
-					
+					short s = (short) ((branchbyte1 << 8) | branchbyte2);					
+					IntValue value = (IntValue) operandStack.pop();
+					if (value.getIntValue() <= 0){
+						//TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! pc = pc-3 + s;
+					}
 					break;
 				}
 				case Constants.INSTRUCTION_iflt: {
 					byte branchbyte1 = byteCode.get(pc++);
 					byte branchbyte2 = byteCode.get(pc++);
-					
+					short s = (short) ((branchbyte1 << 8) | branchbyte2);					
+					IntValue value = (IntValue) operandStack.pop();
+					if (value.getIntValue() < 0){
+						//TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! pc = pc-3 + s;
+					}
 					break;
 				}
 				case Constants.INSTRUCTION_ifne: {
 					byte branchbyte1 = byteCode.get(pc++);
 					byte branchbyte2 = byteCode.get(pc++);
+					short s = (short) ((branchbyte1 << 8) | branchbyte2);					
+					IntValue value = (IntValue) operandStack.pop();
+					if (value.getIntValue() != 0){
+						//TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! pc = pc-3 + s;
+					}
 					
 					break;
 				}
 				case Constants.INSTRUCTION_ifnull: {
 					byte branchbyte1 = byteCode.get(pc++);
 					byte branchbyte2 = byteCode.get(pc++);
-					
+					short s = (short) ((branchbyte1 << 8) | branchbyte2);					
+					StackElement value = operandStack.pop();
+					if (value instanceof Null){
+						//TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! pc = pc-3 + s;
+					}
 					break;
 				}
 				case Constants.INSTRUCTION_iinc: {
@@ -328,6 +364,7 @@ public class Frame {
 				}
 				case Constants.INSTRUCTION_ldc: {
 					byte index = byteCode.get(pc++);
+					operandStack.push(new Reference(constantPool.get(index-1)));// Are you sure??? 
 					break;
 				}
 				case Constants.INSTRUCTION_new: {
