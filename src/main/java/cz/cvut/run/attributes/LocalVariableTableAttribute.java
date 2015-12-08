@@ -29,7 +29,12 @@ public class LocalVariableTableAttribute extends Attribute{
 	}
 	
 	public LocalVariable getLocalVariable(int index){
-		return localVariables.get(index);
+		for(int i=0; i<localVariables.size(); i++){
+			if (localVariables.get(i).getIndex() == index){
+				return localVariables.get(i);
+			}
+		}
+		return null;
 	}
 
 	public void setLocalVariable(int index, LocalVariable l){

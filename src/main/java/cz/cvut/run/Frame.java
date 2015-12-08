@@ -1,13 +1,12 @@
 package cz.cvut.run;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.Stack;
 
 import org.apache.log4j.Logger;
 
 import cz.cvut.run.attributes.CodeAttribute;
+import cz.cvut.run.attributes.LocalVariable;
 import cz.cvut.run.attributes.LocalVariableTableAttribute;
 import cz.cvut.run.classfile.ConstantPoolElement;
 import cz.cvut.run.classfile.Method;
@@ -21,6 +20,7 @@ import cz.cvut.run.utils.Utils;
 public class Frame {
     private static final Logger log = Logger.getLogger(Frame.class);
 	private LocalVariableTableAttribute localVariables;
+	private StackElement[] localVariablesArray;
 	private Stack<StackElement> operandStack = new Stack<StackElement>();
 	private ArrayList<ConstantPoolElement> constantPool;
 	private ArrayList<Byte> byteCode;
@@ -45,6 +45,7 @@ public class Frame {
 		this.localVariableTableIndex = localVariableTableIndex;
 		this.codeAttribute = m.getCodeAttribute(codeIndex);
 		this.localVariables = this.codeAttribute.getLocalVariableTableAttribute(localVariableTableIndex);
+		localVariablesArray = new StackElement[codeAttribute.getMaxLocals()];
 	}
 	
 	
@@ -58,6 +59,7 @@ public class Frame {
 			this.operandStack = input;
 		}
 	}
+	
 	
 	public void execute() throws Exception{
 
@@ -76,36 +78,24 @@ public class Frame {
 				}
 				case Constants.INSTRUCTION_aload: {
 					byte index = byteCode.get(pc++);
+					operandStack.push(localVariablesArray[index]);
 					break;
 				}
 				case Constants.INSTRUCTION_aload_0: {
-					// nebere zadne atributy z bytecode
+					operandStack.push(localVariablesArray[0]);
 					
-					
-					/*CodeAttribute ca = (CodeAttribute) m.getAttributes_info().get(0);
-					System.out.println(ca.getAttributesCount());
-					int indexName = ca.getAttributes().get(0).getAttributeNameIndex()-1;
-					int indexName2 = ca.getAttributes().get(1).getAttributeNameIndex()-1;
-					System.out.println(Utils.getHexa(initCode));
-					System.out.println(cf.getConstantPool().get(indexName2).toString());
-					System.out.println(Utils.getHexa(ca.getAttributes().get(0).getAttributeInfo()));
-					System.out.println(Utils.getHexa(ca.getAttributes().get(1).getAttributeInfo()));
-					//System.out.println(Utils.getHexa(m.getAttributes_info().get(0).getAttributeInfo()));*/
 					break;
 				}
 				case Constants.INSTRUCTION_aload_1: {
-					// nebere zadne atributy z bytecode
-					
+					operandStack.push(localVariablesArray[1]);
 					break;
 				}
 				case Constants.INSTRUCTION_aload_2: {
-					// nebere zadne atributy z bytecode
-					
+					operandStack.push(localVariablesArray[2]);
 					break;
 				}
 				case Constants.INSTRUCTION_aload_3: {
-					// nebere zadne atributy z bytecode
-					
+					operandStack.push(localVariablesArray[3]);
 					break;
 				}
 				case Constants.INSTRUCTION_areturn: {
@@ -120,21 +110,19 @@ public class Frame {
 				}
 				case Constants.INSTRUCTION_astore: {
 					byte index = byteCode.get(pc++);
+					localVariablesArray[index] = operandStack.pop();
 					break;
 				}
 				case Constants.INSTRUCTION_astore_1: {
-					// nebere zadne atributy z bytecode
-					
+					localVariablesArray[1] = operandStack.pop();
 					break;
 				}
 				case Constants.INSTRUCTION_astore_2: {
-					// nebere zadne atributy z bytecode
-					
+					localVariablesArray[2] = operandStack.pop();
 					break;
 				}
 				case Constants.INSTRUCTION_astore_3: {
-					// nebere zadne atributy z bytecode
-					
+					localVariablesArray[3] = operandStack.pop();
 					break;
 				}
 				case Constants.INSTRUCTION_baload: {
@@ -295,23 +283,26 @@ public class Frame {
 					break;
 				}
 				case Constants.INSTRUCTION_iload: {
-					byte index = byteCode.get(pc++);
+					int index = byteCode.get(pc++);
+					operandStack.push(localVariablesArray[index]);
 					break;
 				}
 				case Constants.INSTRUCTION_iload_1: {
-					// neni treba nic brat z bytecode
+					operandStack.push(localVariablesArray[1]);
 					break;
 				}
 				case Constants.INSTRUCTION_iload_2: {
-					// neni treba nic brat z bytecode
+					operandStack.push(localVariablesArray[2]);
 					break;
 				}
 				case Constants.INSTRUCTION_iload_3: {
-					// neni treba nic brat z bytecode
+					operandStack.push(localVariablesArray[3]);
 					break;
 				}
 				case Constants.INSTRUCTION_imul: {
-					// neni treba nic brat z bytecode
+					IntValue value1 = (IntValue) operandStack.pop();
+					IntValue value2 = (IntValue) operandStack.pop();
+					operandStack.push(new IntValue(value1.getIntValue() * value2.getIntValue()));
 					break;
 				}
 				case Constants.INSTRUCTION_invokespecial: {
@@ -340,26 +331,28 @@ public class Frame {
 					break;
 				}
 				case Constants.INSTRUCTION_ishl: {
-					// neni nic treba brat z bytecode
-					
+					IntValue value1 = (IntValue) operandStack.pop();
+					IntValue value2 = (IntValue) operandStack.pop();
+					operandStack.push(new IntValue(value1.getIntValue() << value2.getIntValue()));
 					break;
 				}
 				case Constants.INSTRUCTION_istore: {
 					byte index = byteCode.get(pc++);
-					
+					localVariablesArray[index] = operandStack.pop();
 					break;
 				}
 				case Constants.INSTRUCTION_istore_2: {
-					// neni nic treba brat z bytecode
+					localVariablesArray[2] = operandStack.pop();
 					break;
 				}
 				case Constants.INSTRUCTION_istore_3: {
-					// neni nic treba brat z bytecode
-					
+					localVariablesArray[3] = operandStack.pop();
 					break;
 				}
 				case Constants.INSTRUCTION_isub: {
-					// neni nic treba brat z bytecode
+					IntValue value1 = (IntValue) operandStack.pop();
+					IntValue value2 = (IntValue) operandStack.pop();
+					operandStack.push(new IntValue(value1.getIntValue() - value2.getIntValue()));
 					break;
 				}
 				case Constants.INSTRUCTION_ldc: {
