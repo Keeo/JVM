@@ -64,17 +64,22 @@ public class Method extends ClassElement {
 	}
 	
 	public ArrayList<Byte> getCode(int index) throws Exception{
+		return getCodeAttribute(index).getCode();
+	}
+	
+	public CodeAttribute getCodeAttribute(int index) throws Exception{
 		for(Attribute attr: attributes_info){
 			int nameIndex = attr.getAttributeNameIndex();
 			
 			if(nameIndex == index+1){
 				CodeAttribute ca = (CodeAttribute) attr;
-				return ca.getCode();
+				return ca;
 			}
 		}
 		log.error("Method doesnt have CODE attribute!");
 		throw new Exception("Method doesnt have CODE attribute!");
 	}
+	
 	
 
 }

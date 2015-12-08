@@ -101,8 +101,32 @@ public class CodeAttribute extends Attribute {
 	public ArrayList<Attribute> getAttributes() {
 		return attributes;
 	}
-
 	
+	public LocalVariableTableAttribute getLocalVariableTableAttribute(int index) throws Exception{
+		for(Attribute attr: attributes){
+			int nameIndex = attr.getAttributeNameIndex();
+			
+			if(nameIndex == index+1){
+				LocalVariableTableAttribute lvta = (LocalVariableTableAttribute) attr;
+				return lvta;
+			}
+		}
+		log.error("Method doesnt have LocalVariableTable attribute!");
+		throw new Exception("Method doesnt have LocalVariableTable attribute!");
+	}
+	
+	public LineNumberTableAttribute getLineNumberTableAttribute(int index) throws Exception{
+		for(Attribute attr: attributes){
+			int nameIndex = attr.getAttributeNameIndex();
+			
+			if(nameIndex == index+1){
+				LineNumberTableAttribute lnta = (LineNumberTableAttribute) attr;
+				return lnta;
+			}
+		}
+		log.error("Method doesnt have LineNumberTable attribute!");
+		throw new Exception("Method doesnt have LineNumberTable attribute!");
+	}
 	
 	private class ExceptionTableElement{
 		private byte[] start_pc = new byte[2];
