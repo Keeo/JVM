@@ -26,14 +26,16 @@ public class JVM {
             }
             ClassFile cf = classes.get(0).getClassFile();
             int codeIndex = cf.getCodeIndex();
+            int localVariableTableIndex = cf.getLocalVariableTableIndex();
+            int lineNumberTableIndex = cf.getLineNumberTableIndex();
             Method initMethod = cf.getInitMethod();
         	Method mainMethod = cf.getMainMethod();
         	Heap heap = new Heap();
-        	Frame init = new Frame(initMethod, cf.getConstantPool(), heap, codeIndex);
+        	Frame init = new Frame(initMethod, cf.getConstantPool(), heap, codeIndex, localVariableTableIndex, lineNumberTableIndex);
         	
         	Stack<Byte> initResult = init.getStackResult();
         	init.execute();
-        	Frame main = new Frame(mainMethod, cf.getConstantPool(), heap, codeIndex);
+        	Frame main = new Frame(mainMethod, cf.getConstantPool(), heap, codeIndex, localVariableTableIndex, lineNumberTableIndex);
         	main.setStackResult(initResult);
             main.execute();
         } else {

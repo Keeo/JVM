@@ -7,6 +7,9 @@ import java.util.Stack;
 
 import org.apache.log4j.Logger;
 
+import cz.cvut.run.attributes.CodeAttribute;
+import cz.cvut.run.attributes.LocalVariableTableAttribute;
+import cz.cvut.run.classfile.Attribute;
 import cz.cvut.run.classfile.ConstantPoolElement;
 import cz.cvut.run.classfile.Method;
 import cz.cvut.run.constants.Constants;
@@ -14,15 +17,20 @@ import cz.cvut.run.utils.Utils;
 
 public class Frame {
     private static final Logger log = Logger.getLogger(Frame.class);
-	private ArrayList<Object> localVariables = new ArrayList<Object>();
+	private LocalVariableTableAttribute localVariables;
 	private Stack<Byte> operandStack = new Stack<Byte>();
 	private ArrayList<ConstantPoolElement> constantPool;
 	private ArrayList<Byte> byteCode;
+	private CodeAttribute codeAttribute;
+	@SuppressWarnings("unused")
 	private Method method;
 	private Heap heap;
+	@SuppressWarnings("unused")
 	private int codeIndex = 0;
+	int lineNumberTableIndex;
+	int localVariableTableIndex;
 	
-	Frame(Method m, ArrayList<ConstantPoolElement> cp, Heap heap, int codeIndex) throws Exception{
+	Frame(Method m, ArrayList<ConstantPoolElement> cp, Heap heap, int codeIndex, int localVariableTableIndex, int lineNumberTableIndex) throws Exception{
 		this.method = m;
 		
 		byteCode = m.getCode(codeIndex);
@@ -30,6 +38,15 @@ public class Frame {
 		this.constantPool = cp;
 		this.heap = heap;
 		this.codeIndex = codeIndex;
+		this.lineNumberTableIndex = lineNumberTableIndex;
+		this.localVariableTableIndex = localVariableTableIndex;
+		this.codeAttribute = m.getCodeAttribute(codeIndex);
+		this.localVariables = this.codeAttribute.getLocalVariableTableAttribute(localVariableTableIndex);
+		
+		for(Attribute a: this.codeAttribute.getAttributes()){
+			int nameIndex = a.getAttributeNameIndex()-1;
+			log.info("=========== " + cp.get(nameIndex).toString());
+		}
 	}
 	
 	

@@ -157,5 +157,27 @@ public class ClassFile {
 		log.error("Not found MAIN method in class file!");
 		throw new Exception("Not found MAIN method in class file!");
 	}
+	public int getLineNumberTableIndex() {
+		for(int i=0; i<constantPool.size(); i++){
+			if (constantPool.get(i).getTag() == Constants.TAG_UTF8){
+				ConstUtf8Info utf8 = (ConstUtf8Info) constantPool.get(i);
+				if (utf8.toString().equals(Constants.LINE_NUMBER_TABLE)){
+					return i;
+				}
+			}
+		}
+		return -1;
+	}
+	public int getLocalVariableTableIndex() {
+		for(int i=0; i<constantPool.size(); i++){
+			if (constantPool.get(i).getTag() == Constants.TAG_UTF8){
+				ConstUtf8Info utf8 = (ConstUtf8Info) constantPool.get(i);
+				if (utf8.toString().equals(Constants.LOCAL_VARIABLE_TABLE)){
+					return i;
+				}
+			}
+		}
+		return -1;
+	}
 	
 }
