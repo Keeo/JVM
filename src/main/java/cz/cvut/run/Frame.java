@@ -148,12 +148,12 @@ public class Frame {
 				}
 				case Constants.INSTRUCTION_bipush: {
 					byte _byte = byteCode.get(pc++);
-					
+					log.info("===================================================" + _byte);
 					break;
 				}
 				case Constants.INSTRUCTION_dup: {
-					// nebere zadne atributy z bytecode
-					
+					StackElement e = operandStack.peek();
+					operandStack.push(e);
 					break;
 				}
 				case Constants.INSTRUCTION_getfield: {
@@ -170,6 +170,8 @@ public class Frame {
 				case Constants.INSTRUCTION_goto: {
 					byte branchbyte1 = byteCode.get(pc++);
 					byte branchbyte2 = byteCode.get(pc++);
+					short s = (short) ((branchbyte1 << 8) | branchbyte2);
+					//TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! pc = pc-3 + s;
 					break;
 				}
 				case Constants.INSTRUCTION_checkcast: {
@@ -194,22 +196,18 @@ public class Frame {
 					break;
 				}
 				case Constants.INSTRUCTION_iconst_0: {
-					// nebere zadne atributy z bytecode
 					operandStack.push(new IntValue(0));
 					break;
 				}
 				case Constants.INSTRUCTION_iconst_1: {
-					// nebere zadne atributy z bytecode
 					operandStack.push(new IntValue(1));
 					break;
 				}
 				case Constants.INSTRUCTION_iconst_2: {
-					// nebere zadne atributy z bytecode
 					operandStack.push(new IntValue(2));
 					break;
 				}
 				case Constants.INSTRUCTION_iconst_3: {
-					// nebere zadne atributy z bytecode
 					operandStack.push(new IntValue(3));
 					break;
 				}
@@ -342,7 +340,7 @@ public class Frame {
 					break;
 				}
 				case Constants.INSTRUCTION_pop: {
-					// neni nic treba brat z bytecode
+					operandStack.pop();
 					break;
 				}
 				case Constants.INSTRUCTION_putfield: {
