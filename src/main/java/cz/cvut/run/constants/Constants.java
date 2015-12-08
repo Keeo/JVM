@@ -241,6 +241,12 @@ public class Constants {
 
 
 	public static final Object MAIN = "main";
+
+
+	public static final Object LINE_NUMBER_TABLE = "LineNumberTable";
+
+
+	public static final Object LOCAL_VARIABLE_TABLE = "LocalVariableTable";
 	
 	
 }

@@ -66,7 +66,8 @@ public class ClassLoader {
 	Object[] methods;
 	Object[] attributes;
 	protected ClassFile cf = new ClassFile();
-	
+	private int localVariableTableIndex;
+	private int linesTableIndex;
 	
 	ClassLoader(File file) throws Exception{
 		this.file = file;
@@ -309,8 +310,14 @@ public class ClassLoader {
 					fis.read(length, 0, 2);
 					byte[] value = new byte[Utils.parseByteToInt(length)];
 					fis.read(value, 0, value.length);
+					ConstUtf8Info utf8 = new ConstUtf8Info(length, value);
 					
-					constantPool.add(new ConstUtf8Info(length, value));
+					constantPool.add(utf8);
+					if (utf8.toString().equals(Constants.LOCAL_VARIABLE_TABLE)){
+						this.localVariableTableIndex = constantPool.size();
+					}else if (utf8.toString().equals(Constants.LOCAL_VARIABLE_TABLE)){
+						this.linesTableIndex= constantPool.size();
+					}
 					log.debug("Constant pool value: \t" + Utils.getHexa(tagArr) + "\t" + Utils.getHexa(value));
 					break;
 				}
@@ -399,7 +406,7 @@ public class ClassLoader {
 		if (type.equals("SourceFile")){
 			result = new SourceFileAttribute(attribute_name_index, attribute_length);
 		}else if(type.equals("Code")){
-			result = new CodeAttribute(attribute_name_index, attribute_length);
+			result = new CodeAttribute(attribute_name_index, attribute_length, localVariableTableIndex, linesTableIndex);
 		}else if(type.equals("Exceptions")){
 			result = new ExceptionsAttribute(attribute_name_index, attribute_length);
 		}else if(type.equals("ConstantValue")){

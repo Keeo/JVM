@@ -16,12 +16,16 @@ public class CodeAttribute extends Attribute {
 	private ArrayList<Byte> code;
 	private int exceptionTableLength;
 	private int attributesCount;
+	private int localVariableTableIndex;
+	private int linesNumberIndex;
 	
 	private ArrayList<ExceptionTableElement> exceptionsTable = new ArrayList<ExceptionTableElement>();
 	private ArrayList<Attribute> attributes = new ArrayList<Attribute>();
 	
-	public CodeAttribute(byte[] attributeNameIndex, byte[] attributeLength) {
+	public CodeAttribute(byte[] attributeNameIndex, byte[] attributeLength, int localVariableTableIndex, int linesNumberIndex) {
 		super(attributeNameIndex, attributeLength);
+		this.localVariableTableIndex = localVariableTableIndex;
+		this.linesNumberIndex = linesNumberIndex;
 	}
 	
 	@Override
@@ -58,7 +62,16 @@ public class CodeAttribute extends Attribute {
 		for(int i=0; i<attributesCount; i++){
 			byte[] attributeNameIndex = new byte[]{attributeInfo[++p], attributeInfo[++p]};
 			byte[] attributeLength = new byte[]{attributeInfo[++p], attributeInfo[++p], attributeInfo[++p], attributeInfo[++p]};
-			Attribute a = new Attribute(attributeNameIndex, attributeLength);
+			int nameIndex = Utils.parseByteToInt(attributeNameIndex);
+			Attribute a;
+			if (nameIndex == this.localVariableTableIndex){
+				a = new LocalVariableTableAttribute(attributeNameIndex, attributeLength);
+			}else if(nameIndex == this.linesNumberIndex){
+				a = new LineNumberTableAttribute(attributeNameIndex, attributeLength);
+			}else{
+				a = new Attribute(attributeNameIndex, attributeLength);
+			}
+			
 			byte[] tmpAttributeInfo = new byte[Utils.parseByteToInt(attributeLength)];
 			for(int j=0; j<Utils.parseByteToInt(attributeLength); j++){
 				tmpAttributeInfo[j] = attributeInfo[++p];
@@ -101,8 +114,32 @@ public class CodeAttribute extends Attribute {
 	public ArrayList<Attribute> getAttributes() {
 		return attributes;
 	}
-
 	
+	public LocalVariableTableAttribute getLocalVariableTableAttribute(int index) throws Exception{
+		for(Attribute attr: attributes){
+			int nameIndex = attr.getAttributeNameIndex();
+			
+			if(nameIndex == index+1){
+				LocalVariableTableAttribute lvta = (LocalVariableTableAttribute) attr;
+				return lvta;
+			}
+		}
+		log.error("Method doesnt have LocalVariableTable attribute!");
+		throw new Exception("Method doesnt have LocalVariableTable attribute!");
+	}
+	
+	public LineNumberTableAttribute getLineNumberTableAttribute(int index) throws Exception{
+		for(Attribute attr: attributes){
+			int nameIndex = attr.getAttributeNameIndex();
+			
+			if(nameIndex == index+1){
+				LineNumberTableAttribute lnta = (LineNumberTableAttribute) attr;
+				return lnta;
+			}
+		}
+		log.error("Method doesnt have LineNumberTable attribute!");
+		throw new Exception("Method doesnt have LineNumberTable attribute!");
+	}
 	
 	private class ExceptionTableElement{
 		private byte[] start_pc = new byte[2];
