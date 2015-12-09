@@ -12,20 +12,26 @@ public class Sat {
 	 * @param args
 	 * @throws Exception
 	 */
-	public static void main(String[] args) throws Exception {
+	public static String main() throws Exception {
 		String sat = "abc!d&|&";
+		return findSolution(sat);
+	}
+	
+	public static String findSolution(String sat){  	
 		Expression e = buildTree(sat);
-		System.out.println(e);
+		String result = "";
 		boolean[] solution = solve(e, variableCount(sat));
 		if (solution != null) {
 			for (int i = 0; i < solution.length; i++) {
-				System.out.print((char) (97 + i));
+				result += (char) (97 + i);
 			}
-			System.out.println();
+			
+			result +="\n";
 			for (int i = 0; i < solution.length; i++) {
-				System.out.print(solution[i] ? '1' : '0');
+				result += (solution[i] ? '1' : '0');
 			}
 		}
+		return result;
 	}
 
 	public static boolean[] solve(Expression e, int variableCount) {
@@ -70,24 +76,18 @@ public class Sat {
 				e.name = c;
 				stack.push(e);
 			} else {
-				switch (c) {
-					case '&':
-					case '|': {
-						Expression e = new Expression();
-						e.operator = c == '&' ? AND : OR;
-						e.right = stack.pop();
-						e.left = stack.pop();
-						stack.push(e);
-					}
-					break;
-
-					case '!': {
-						Expression e = new Expression();
-						e.operator = NOT;
-						e.left = stack.pop();
-						stack.push(e);
-					}
-					break;
+				if (c == '&' || c == '|'){
+			
+					Expression e = new Expression();
+					e.operator = c == '&' ? AND : OR;
+					e.right = stack.pop();
+					e.left = stack.pop();
+					stack.push(e);
+				}else if (c == '!'){
+					Expression e = new Expression();
+					e.operator = NOT;
+					e.left = stack.pop();
+					stack.push(e);
 				}
 			}
 		}

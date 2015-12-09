@@ -61,7 +61,7 @@ public class Frame {
 	}
 	
 	
-	public void execute() throws Exception{
+	public StackElement execute() throws Exception{
 
     	int pc = 0;
     	while (byteCode.size() > pc){
@@ -100,8 +100,7 @@ public class Frame {
 				}
 				case Constants.INSTRUCTION_areturn: {
 					// nebere zadne atributy z bytecode
-					
-					break;
+					return operandStack.pop();
 				}
 				case Constants.INSTRUCTION_arraylength: {
 					// nebere zadne atributy z bytecode
@@ -111,6 +110,10 @@ public class Frame {
 				case Constants.INSTRUCTION_astore: {
 					byte index = byteCode.get(pc++);
 					localVariablesArray[index] = operandStack.pop();
+					break;
+				}
+				case Constants.INSTRUCTION_astore_0: {
+					localVariablesArray[0] = operandStack.pop();
 					break;
 				}
 				case Constants.INSTRUCTION_astore_1: {
@@ -145,22 +148,11 @@ public class Frame {
 					operandStack.push(e);
 					break;
 				}
-				case Constants.INSTRUCTION_getfield: {
-					byte index1 = byteCode.get(pc++);
-					byte index2 = byteCode.get(pc++);
-					break;
-				}
-				case Constants.INSTRUCTION_getstatic: {
-					byte index1 = byteCode.get(pc++);
-					byte index2 = byteCode.get(pc++);
-					
-					break;
-				}
 				case Constants.INSTRUCTION_goto: {
 					byte branchbyte1 = byteCode.get(pc++);
 					byte branchbyte2 = byteCode.get(pc++);
 					short s = (short) ((branchbyte1 << 8) | branchbyte2);
-					//TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! pc = pc-3 + s;
+					 pc = pc-3 + s;
 					break;
 				}
 				case Constants.INSTRUCTION_checkcast: {
@@ -204,6 +196,14 @@ public class Frame {
 					operandStack.push(new IntValue(3));
 					break;
 				}
+				case Constants.INSTRUCTION_iconst_4: {
+					operandStack.push(new IntValue(4));
+					break;
+				}
+				case Constants.INSTRUCTION_iconst_5: {
+					operandStack.push(new IntValue(5));
+					break;
+				}
 				case Constants.INSTRUCTION_if_icmpge: {
 					byte branchbyte1 = byteCode.get(pc++);
 					byte branchbyte2 = byteCode.get(pc++);
@@ -211,7 +211,7 @@ public class Frame {
 					IntValue value1 = (IntValue) operandStack.pop();
 					IntValue value2 = (IntValue) operandStack.pop();
 					if (value1.getIntValue() >= value2.getIntValue()){
-						//TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! pc = pc-3 + s;
+						 pc = pc-3 + s;
 					}
 					break;
 				}
@@ -222,7 +222,7 @@ public class Frame {
 					IntValue value1 = (IntValue) operandStack.pop();
 					IntValue value2 = (IntValue) operandStack.pop();
 					if (value1.getIntValue() != value2.getIntValue()){
-						//TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! pc = pc-3 + s;
+						 pc = pc-3 + s;
 					}
 					break;
 				}
@@ -232,7 +232,7 @@ public class Frame {
 					short s = (short) ((branchbyte1 << 8) | branchbyte2);
 					IntValue value = (IntValue) operandStack.pop();
 					if (value.getIntValue() == 0){
-						//TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! pc = pc-3 + s;
+						 pc = pc-3 + s;
 					}
 					break;
 				}
@@ -242,7 +242,7 @@ public class Frame {
 					short s = (short) ((branchbyte1 << 8) | branchbyte2);					
 					IntValue value = (IntValue) operandStack.pop();
 					if (value.getIntValue() <= 0){
-						//TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! pc = pc-3 + s;
+						 pc = pc-3 + s;
 					}
 					break;
 				}
@@ -252,7 +252,7 @@ public class Frame {
 					short s = (short) ((branchbyte1 << 8) | branchbyte2);					
 					IntValue value = (IntValue) operandStack.pop();
 					if (value.getIntValue() < 0){
-						//TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! pc = pc-3 + s;
+						 pc = pc-3 + s;
 					}
 					break;
 				}
@@ -262,7 +262,7 @@ public class Frame {
 					short s = (short) ((branchbyte1 << 8) | branchbyte2);					
 					IntValue value = (IntValue) operandStack.pop();
 					if (value.getIntValue() != 0){
-						//TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! pc = pc-3 + s;
+						 pc = pc-3 + s;
 					}
 					
 					break;
@@ -273,7 +273,7 @@ public class Frame {
 					short s = (short) ((branchbyte1 << 8) | branchbyte2);					
 					StackElement value = operandStack.pop();
 					if (value instanceof Null){
-						//TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! pc = pc-3 + s;
+						 pc = pc-3 + s;
 					}
 					break;
 				}
@@ -309,7 +309,7 @@ public class Frame {
 				case Constants.INSTRUCTION_invokespecial: {
 					byte arg0 = byteCode.get(pc++);
 					byte arg1 = byteCode.get(pc++);
-					log.info("invokespecial args: " + Utils.getHexa(arg0) + " " + Utils.getHexa(arg1));
+					log.debug("invokespecial args: " + Utils.getHexa(arg0) + " " + Utils.getHexa(arg1));
 					
 					//operandStack.push()
 					//Instructions.invokeSpecial(stack, arg0, arg1, cf);
@@ -327,9 +327,7 @@ public class Frame {
 					break;
 				}
 				case Constants.INSTRUCTION_ireturn: {
-					// neni nic treba brat z bytecode
-					
-					break;
+					return operandStack.pop();					
 				}
 				case Constants.INSTRUCTION_ishl: {
 					IntValue value1 = (IntValue) operandStack.pop();
@@ -340,6 +338,10 @@ public class Frame {
 				case Constants.INSTRUCTION_istore: {
 					byte index = byteCode.get(pc++);
 					localVariablesArray[index] = operandStack.pop();
+					break;
+				}
+				case Constants.INSTRUCTION_istore_1: {
+					localVariablesArray[1] = operandStack.pop();
 					break;
 				}
 				case Constants.INSTRUCTION_istore_2: {
@@ -386,17 +388,17 @@ public class Frame {
 				}
 				case Constants.INSTRUCTION_return: {
 					// neni nic treba brat z bytecode
-					//TODO operandStack.clear();
-					break;
+					return null;
 				}
 				default:{
 					log.error("Unsupported instruction: " + Utils.getHexa(instruction));
 				}
 			}
+    		//log.info(operandStack);
     	}
     	
     	log.info(operandStack);
-    	
+    	return null;
     	
     	
     }
