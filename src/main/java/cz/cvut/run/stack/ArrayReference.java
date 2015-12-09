@@ -6,5 +6,9 @@ public class ArrayReference extends Reference {
 		super(o);
 		// TODO Auto-generated constructor stub
 	}
+	
+	public int getLength(){
+		return -5;
+	}
 
 }

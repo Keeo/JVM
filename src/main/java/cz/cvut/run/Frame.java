@@ -11,6 +11,7 @@ import cz.cvut.run.attributes.LocalVariableTableAttribute;
 import cz.cvut.run.classfile.ConstantPoolElement;
 import cz.cvut.run.classfile.Method;
 import cz.cvut.run.constants.Constants;
+import cz.cvut.run.stack.ArrayReference;
 import cz.cvut.run.stack.IntValue;
 import cz.cvut.run.stack.Null;
 import cz.cvut.run.stack.Reference;
@@ -103,8 +104,8 @@ public class Frame {
 					return operandStack.pop();
 				}
 				case Constants.INSTRUCTION_arraylength: {
-					// nebere zadne atributy z bytecode
-					
+					ArrayReference a = (ArrayReference) operandStack.pop();
+					operandStack.push(new IntValue(a.getLength()));
 					break;
 				}
 				case Constants.INSTRUCTION_astore: {
