@@ -8,6 +8,7 @@ import java.util.Stack;
 import cz.cvut.run.attributes.CodeAttribute;
 import cz.cvut.run.classfile.Method;
 import cz.cvut.run.constants.Constants;
+import cz.cvut.run.stack.StackElement;
 import cz.cvut.run.utils.Utils;
 
 import org.apache.log4j.Logger;
@@ -32,12 +33,12 @@ public class JVM {
         	Method mainMethod = cf.getMainMethod();
         	Heap heap = new Heap();
         	Frame init = new Frame(initMethod, cf.getConstantPool(), heap, codeIndex, localVariableTableIndex, lineNumberTableIndex);
+        	StackElement initResult = init.execute();
         	
-        	Stack<Byte> initResult = init.getStackResult();
-        	init.execute();
         	Frame main = new Frame(mainMethod, cf.getConstantPool(), heap, codeIndex, localVariableTableIndex, lineNumberTableIndex);
-        	main.setStackResult(initResult);
-            main.execute();
+        	StackElement mainResult = main.execute();
+            
+            System.out.println(mainResult.toString());
         } else {
             log.error("Please specify Class files in argumets!");
         }

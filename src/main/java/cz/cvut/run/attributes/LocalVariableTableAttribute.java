@@ -16,6 +16,7 @@ public class LocalVariableTableAttribute extends Attribute{
 	
 	@Override
 	public void setAttributeInfo(byte[] attributeInfo) {
+		System.out.println(Utils.getHexa(attributeInfo));
 		int p =0;
 		this.localVariableTableLength = Utils.parseByteToInt(new byte[]{attributeInfo[p++], attributeInfo[p++]});
 		for(int i=0; i<this.localVariableTableLength; i++){
@@ -27,50 +28,16 @@ public class LocalVariableTableAttribute extends Attribute{
 		}
 	}
 	
-	
-	private class LocalVariable{
-		private byte[] startPc = new byte[2];
-		private byte[] length = new byte[2];
-		private byte[] nameIndex = new byte[2];
-		private byte[] descriptionIndex = new byte[2];
-		private byte[] index = new byte[2];
-		
-		LocalVariable(byte[] input){
-			this.startPc[0] = input[0];
-			this.startPc[1] = input[1];
-			
-			this.length[0] = input[2];
-			this.length[1] = input[3];
-		
-			this.nameIndex[0] = input[4];
-			this.nameIndex[1] = input[5];
-			
-			this.descriptionIndex[0] = input[6];
-			this.descriptionIndex[1] = input[7];
-			
-			this.index[0] = input[8];
-			this.index[1] = input[9];
+	public LocalVariable getLocalVariable(int index){
+		for(int i=0; i<localVariables.size(); i++){
+			if (localVariables.get(i).getIndex() == index){
+				return localVariables.get(i);
+			}
 		}
-		
-		public byte[] getStartPc() {
-			return startPc;
-		}
+		return null;
+	}
 
-		public byte[] getLength() {
-			return length;
-		}
-
-		public byte[] getNameIndex() {
-			return nameIndex;
-		}
-
-		public byte[] getDescriptionIndex() {
-			return descriptionIndex;
-		}
-
-		public byte[] getIndex() {
-			return index;
-		}		
-		
+	public void setLocalVariable(int index, LocalVariable l){
+		localVariables.set(index, l);
 	}
 }

@@ -14,6 +14,7 @@ public class ApplicationTest {
 	
 	private static final String TestClassFile001 = DELIMITER + "TestClassFile001.class";
 	private static final String TestWrongFile = TEST_CLASSES_WRONG_PATH + DELIMITER + "createdFiles.lst";
+	private static final String TestClassFile002 = DELIMITER + "SimpleTest.class";
 	
 	private static final String SatClassFile = DELIMITER + "Sat.class";
 	private static final String ExpressionClassFile = DELIMITER + "Expression.class";
@@ -46,7 +47,6 @@ public class ApplicationTest {
     @Test
     public void testSatRightPath() throws Exception{ // Jednoduché puštění s odkazem na platnou cestu ale chybný soubor
     	JVM.main(new String[] {new java.io.File( "." ).getCanonicalPath()+TEST_CLASSES_PATH + SatClassFile, new java.io.File( "." ).getCanonicalPath()+TEST_CLASSES_PATH + ExpressionClassFile});
-    	//JVM.main(new String[] {new java.io.File( "." ).getCanonicalPath()+TEST_CLASSES_PATH + ExpressionClassFile});
     }
     
     @Test
@@ -54,4 +54,9 @@ public class ApplicationTest {
     	Assert.assertEquals(12345, Utils.parseByteToInt(new byte[] {48,57}));
     	Assert.assertEquals(1234512345, Utils.parseByteToInt(new byte[] {73,-107,41,-39}));
     }
+    @Test
+    public void testSimple() throws Exception{
+    	//JVM.main(new String[] {new java.io.File( "." ).getCanonicalPath()+ TEST_CLASSES_PATH + TestClassFile002});
+    }
+    
 }

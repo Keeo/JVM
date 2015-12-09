@@ -16,12 +16,16 @@ public class CodeAttribute extends Attribute {
 	private ArrayList<Byte> code;
 	private int exceptionTableLength;
 	private int attributesCount;
+	private int localVariableTableIndex;
+	private int linesNumberIndex;
 	
 	private ArrayList<ExceptionTableElement> exceptionsTable = new ArrayList<ExceptionTableElement>();
 	private ArrayList<Attribute> attributes = new ArrayList<Attribute>();
 	
-	public CodeAttribute(byte[] attributeNameIndex, byte[] attributeLength) {
+	public CodeAttribute(byte[] attributeNameIndex, byte[] attributeLength, int localVariableTableIndex, int linesNumberIndex) {
 		super(attributeNameIndex, attributeLength);
+		this.localVariableTableIndex = localVariableTableIndex;
+		this.linesNumberIndex = linesNumberIndex;
 	}
 	
 	@Override
@@ -58,7 +62,16 @@ public class CodeAttribute extends Attribute {
 		for(int i=0; i<attributesCount; i++){
 			byte[] attributeNameIndex = new byte[]{attributeInfo[++p], attributeInfo[++p]};
 			byte[] attributeLength = new byte[]{attributeInfo[++p], attributeInfo[++p], attributeInfo[++p], attributeInfo[++p]};
-			Attribute a = new Attribute(attributeNameIndex, attributeLength);
+			int nameIndex = Utils.parseByteToInt(attributeNameIndex);
+			Attribute a;
+			if (nameIndex == this.localVariableTableIndex){
+				a = new LocalVariableTableAttribute(attributeNameIndex, attributeLength);
+			}else if(nameIndex == this.linesNumberIndex){
+				a = new LineNumberTableAttribute(attributeNameIndex, attributeLength);
+			}else{
+				a = new Attribute(attributeNameIndex, attributeLength);
+			}
+			
 			byte[] tmpAttributeInfo = new byte[Utils.parseByteToInt(attributeLength)];
 			for(int j=0; j<Utils.parseByteToInt(attributeLength); j++){
 				tmpAttributeInfo[j] = attributeInfo[++p];
